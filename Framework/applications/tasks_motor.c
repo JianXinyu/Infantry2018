@@ -180,7 +180,8 @@ uint16_t zyg;
 uint16_t findyawzero, findpitchzero;
 
 /*Yaw电机*/
-int16_t yawIntensity = 0;		
+int16_t yawIntensity = 0;
+int isGMYAWFirstEnter = 1;
 void ControlYaw(void)
 {
 	if(IOPool_hasNextRead(GMYAWRxIOPool, 0))

@@ -79,7 +79,7 @@ static uint16_t CNT_1s = 75;	//用于避免四连发模式下两秒内连射8发
 static uint16_t CNT_250ms = 18;	//用于点射模式下射频限制
 extern uint8_t burst;
 extern float friction_speed;
-float now_friction_speed = 1500;
+float now_friction_speed = 5000;
 
 RampGen_t frictionRamp = RAMP_GEN_DAFAULT;  
 RampGen_t LRSpeedRamp = RAMP_GEN_DAFAULT;   
@@ -207,53 +207,92 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)   
 			{
 				SetShootState(NOSHOOTING);
-				frictionRamp.ResetCounter(&frictionRamp);
-				g_friction_wheel_state = FRICTION_WHEEL_START_TURNNING;	 
+				g_friction_wheel_state = FRICTION_WHEEL_ON;	 
 				LASER_ON(); 
+				friction_speed = 6500;
 			}				 		
 		}break;
 		case FRICTION_WHEEL_START_TURNNING:
 		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   
-			{
-				LASER_OFF();//zy0802
-				SetShootState(NOSHOOTING);
-				SetFrictionWheelSpeed(1000);
-				g_friction_wheel_state = FRICTION_WHEEL_OFF;
-				frictionRamp.ResetCounter(&frictionRamp);
-			}
-			else
-			{
-				/*斜坡函数必须有，避免电流过大烧坏主控板*/
-				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
-				//SetFrictionWheelSpeed(1000);
-				//g_friction_wheel_state = FRICTION_WHEEL_ON; 
-				if(frictionRamp.IsOverflow(&frictionRamp))
-				{
-					g_friction_wheel_state = FRICTION_WHEEL_ON; 	
-				}
-				
-			}
 		}break;
 		case FRICTION_WHEEL_ON:
 		{
 			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   
 			{
-				LASER_OFF();//zy0802
+				LASER_OFF();
 				g_friction_wheel_state = FRICTION_WHEEL_OFF;				  
-				SetFrictionWheelSpeed(1000); 
-				frictionRamp.ResetCounter(&frictionRamp);
+				friction_speed = 0;
 				SetShootState(NOSHOOTING);
 			}
 			else if(sw->switch_value_raw == 2)
 			{
 				SetShootState(SHOOTING);
+			  RotateCNT+=1;
+				if(RotateCNT>= 25)
+				{	
+					RotateCNT = 0;
+					ShootOneBullet();
+					RotateCNT = 0;
+				}
 			}
 			else
 			{
 				SetShootState(NOSHOOTING);
 			}					 
 		} break;				
+//		case FRICTION_WHEEL_OFF:
+//		{
+//			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)   
+//			{
+//				SetShootState(NOSHOOTING);
+//				frictionRamp.ResetCounter(&frictionRamp);
+//				g_friction_wheel_state = FRICTION_WHEEL_START_TURNNING;	 
+//				LASER_ON(); 
+//				friction_speed = now_friction_speed;
+//			}				 		
+//		}break;
+//		case FRICTION_WHEEL_START_TURNNING:
+//		{
+//			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   
+//			{
+//				LASER_OFF();//zy0802
+//				SetShootState(NOSHOOTING);
+//				SetFrictionWheelSpeed(1000);
+//				g_friction_wheel_state = FRICTION_WHEEL_OFF;
+//				frictionRamp.ResetCounter(&frictionRamp);
+//			}
+//			else
+//			{
+//				/*斜坡函数必须有，避免电流过大烧坏主控板*/
+//				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+//				//SetFrictionWheelSpeed(1000);
+//				//g_friction_wheel_state = FRICTION_WHEEL_ON; 
+//				if(frictionRamp.IsOverflow(&frictionRamp))
+//				{
+//					g_friction_wheel_state = FRICTION_WHEEL_ON; 	
+//				}
+//				
+//			}
+//		}break;
+//		case FRICTION_WHEEL_ON:
+//		{
+//			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   
+//			{
+//				LASER_OFF();//zy0802
+//				g_friction_wheel_state = FRICTION_WHEEL_OFF;				  
+//				SetFrictionWheelSpeed(1000); 
+//				frictionRamp.ResetCounter(&frictionRamp);
+//				SetShootState(NOSHOOTING);
+//			}
+//			else if(sw->switch_value_raw == 2)
+//			{
+//				SetShootState(SHOOTING);
+//			}
+//			else
+//			{
+//				SetShootState(NOSHOOTING);
+//			}					 
+//		} break;				
 	}
 }
 	 

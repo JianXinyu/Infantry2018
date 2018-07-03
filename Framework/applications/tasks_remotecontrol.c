@@ -244,7 +244,7 @@ void RemoteControlProcess(Remote *rc)
 			HAL_UART_Transmit(&SERVO_UART,(uint8_t *)&ServoMes, 15, 0xFFFF);
 		}
 	}
-	//RemoteShootControl(&g_switch1, rc->s1);
+	RemoteShootControl(&g_switch1, rc->s1);
 }
 
 
@@ -395,21 +395,21 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		if(key->v == 2048)//z
 		{
 			now_friction_speed = 1250;
-			friction_speed = 1250;
+			friction_speed = 5500;
 			LASER_ON(); 
-			realBulletSpeed = 11.0f;
+			realBulletSpeed = 15.0f;
 		}
 		if(key->v == 4096)//x
 		{
 			now_friction_speed = 1500;
-			friction_speed = 1500;
+			friction_speed = 6500;
 			LASER_ON(); 
-			realBulletSpeed = 22.0f;
+			realBulletSpeed = 23.0f;//6750-24.5 7000-25.5 
 		}
 		if(key->v == 8192)//c
 		{
 			now_friction_speed = 10000;
-			friction_speed = 10000;
+			friction_speed = 7500;
 			LASER_ON();
 			realBulletSpeed = 28.0f;
 		}
