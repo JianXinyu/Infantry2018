@@ -15,6 +15,7 @@
 #include "utilities_debug.h"
 #include "stdint.h"
 #include "stddef.h"
+#include "math.h"
 #include "drivers_ramp.h"
 #include "pid_regulator.h"
 #include "tasks_timed.h"
@@ -215,9 +216,11 @@ void RemoteDataProcess(uint8_t *pData)
 		}break;
 	}
 }
+extern float yawMotorAngle;
 
 void RemoteControlProcess(Remote *rc)
 {
+	static float AngleTarget_temp = 0;
 	if(GetWorkState()!=PREPARE_STATE)
 	{
 		SetShootMode(MANUL);
@@ -225,8 +228,22 @@ void RemoteControlProcess(Remote *rc)
 		ChassisSpeedRef.left_right_ref   = (rc->ch0 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT; 
 		
  		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		yawAngleTarget   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT;
+		
 
+		if(fabs(yawMotorAngle) <= 90)
+		{
+				yawAngleTarget   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT;
+		}
+			
+		AngleTarget_temp = yawAngleTarget;
+			
+		if(fabs(yawMotorAngle) > 90 )
+		{
+				AngleTarget_temp   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT;
+				if(fabs(AngleTarget_temp)<fabs(yawAngleTarget))
+					yawAngleTarget = AngleTarget_temp;
+		}
+		
 		if(rc->ch3 == 0x16C)
 		{
 			//twist_state = 1;
