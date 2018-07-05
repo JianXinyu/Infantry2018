@@ -19,6 +19,7 @@
 //#define INFANTRY_1
 //#define INFANTRY_4
 #define INFANTRY_5                                                                           
+//#define LITTLE_SON
 
 void CMGMControlTask(void const * argument);
 void ControlYaw(void);

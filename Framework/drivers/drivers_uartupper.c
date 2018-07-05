@@ -276,7 +276,14 @@ void vRefreshLocation(float yaw_center, float pitch_center){
   Location_Number[8].yaw_position = yaw_center - dis_yaw;
 	Location_Number[8].pitch_position = pitch_center - dis_pitch;
 }
-
+#ifdef INFANTRY_1
+#define pAddZy 6.44f
+#define pMinusZy 5.87f
+#define yAddZy 9.0f
+#define yMinusZy 10.0f//1号车
+#define zyDetaP 0.4f
+#define zyDetaY 0.8f
+#endif
 #ifdef INFANTRY_4
 #define pAddZy 6.74f
 #define pMinusZy 5.77f
@@ -293,14 +300,15 @@ void vRefreshLocation(float yaw_center, float pitch_center){
 #define zyDetaP 1.4f
 #define zyDetaY 0.0f
 #endif
-#ifdef INFANTRY_1
-#define pAddZy 6.44f
-#define pMinusZy 5.87f
-#define yAddZy 9.0f
-#define yMinusZy 10.0f//1号车
-#define zyDetaP 0.4f
-#define zyDetaY 0.8f
+#ifdef LITTLE_SON
+#define pAddZy 6.64f
+#define pMinusZy 5.9f
+#define yAddZy 9.2f
+#define yMinusZy 9.9f
+#define zyDetaP 1.4f
+#define zyDetaY 0.0f
 #endif
+
 void zyLocationInit(Location_Number_s * Rune3Position)//(float yaw_center,float pitch_center)
 {
 	for(int i=0;i<3;i++)

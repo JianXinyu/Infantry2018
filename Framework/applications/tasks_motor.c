@@ -40,30 +40,42 @@
 
 //PID_INIT(Kp, Ki, Kd, KpMax, KiMax, KdMax, OutputMax)
 //云台PID
-#ifdef INFANTRY_5
-fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(10.0, 0.0, 5.0, 10000.0, 10000.0, 10000.0, 6000.0);//8,0,0
-fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(20.0, 0.0, 3, 10000.0, 10000.0, 10000.0, 6000.0);//5,0,0.5
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(1.5, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 5000.0);//40,0,15
-fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(3.0, 0.0, 1, 10000.0, 10000.0, 10000.0, 5000.0);//30,0,5
-#define yaw_zero 7820
-#define pitch_zero 5300
-#endif
-#ifdef INFANTRY_4
-fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(4, 5.0, 5, 10000.0, 10000.0, 10000.0, 6000.0);
-fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(30, 0.0, 4.5, 10000.0, 10000.0, 10000.0, 6000.0);//等幅振荡P37.3 I11.9 D3.75  原26.1 8.0 1.1
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(1.5, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 3500.0);
-fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(4.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
-#define yaw_zero 5590
-#define pitch_zero 4605
-#endif
 #ifdef INFANTRY_1
 fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(200.0, 1.0, 40, 10000.0, 10000.0, 10000.0, 6000.0);
-fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(25.0, 0.0, 5, 10000.0, 10000.0, 10000.0, 6000.0);//等幅振荡P37.3 I11.9 D3.75  原26.1 8.0 1.1
+fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(25.0, 0.0, 5, 10000.0, 10000.0, 10000.0, 6000.0);
 fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(1, 0.0, 20, 10000.0, 10000.0, 10000.0, 3500.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(2, 0.0, 2, 10000.0, 10000.0, 10000.0, 4000.0);
 #define yaw_zero 2136
 #define pitch_zero 7087
 #endif
+
+#ifdef INFANTRY_4
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(4, 5.0, 5, 10000.0, 10000.0, 10000.0, 6000.0);
+fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(30, 0.0, 4.5, 10000.0, 10000.0, 10000.0, 6000.0);
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(1.5, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 3500.0);
+fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(4.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 4000.0);
+#define yaw_zero 5590
+#define pitch_zero 4605
+#endif
+
+#ifdef INFANTRY_5
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(3.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 6000.0);//8,0,0
+fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(15.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 6000.0);//20,0,4,5
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(10, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 5000.0);//40,0,15
+fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(15.0, 0.5, 0, 10000.0, 10000.0, 10000.0, 5000.0);//30,0,5
+#define yaw_zero 7820
+#define pitch_zero 7740
+#endif
+
+#ifdef LITTLE_SON
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(3.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 6000.0);//8,0,0
+fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(15.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 6000.0);//20,0,4,5
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(15, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 5000.0);//40,0,15
+fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(15.0, 0.5, 0, 10000.0, 10000.0, 10000.0, 5000.0);//30,0,5
+#define yaw_zero 4700
+#define pitch_zero 6100
+#endif
+
 fw_PID_Regulator_t PLATEPositionPID = fw_PID_INIT(200.0, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 8000.0);
 fw_PID_Regulator_t PLATESpeedPID = fw_PID_INIT(200.0, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 8000.0);
 
@@ -138,12 +150,11 @@ float deltaGyro;
 float readsth;
 float friction_speed = 0;
 
+//该系数是为了解决电机电流必须取反的问题, 尚未找出原因
 int strange_coefficient_yaw = 1;
 int strange_coefficient_pitch = 1;
 int strange_coefficient_lf = 1;
 int strange_coefficient_rf = 1;
-
-extern WorkState_e g_workState;//7.5
 
 void CMGMControlTask(void const * argument)
 {
@@ -240,7 +251,7 @@ void ControlYaw(void)
 //				isGMYawFirstEnter = 0;
 //			}
 //			else yawRealAngle = NORMALIZE_ANGLE180(deltaGyro);
-				//if(isGMYawFirstEnter == 0) yawRealAngle = NORMALIZE_ANGLE180(deltaGyro);
+//				if(isGMYawFirstEnter == 0) yawRealAngle = NORMALIZE_ANGLE180(deltaGyro);
 				GMYAWGyroThisAngle = gyroZAngle;
 				if(isGMYawGyroFirstEnter == 1)
 					{
@@ -471,6 +482,19 @@ void ControlRotate(void)
 }
 
 /*底盘电机控制FL(ForwardLeft)FR BL BR*/
+#ifdef INFANTRY_1
+#define Rotate_Coefficient_FL 1;
+#endif
+#ifdef INFANTRY_4 
+#define Rotate_Coefficient_FL 1;
+#endif
+#ifdef INFANTRY_5 
+#define Rotate_Coefficient_FL 163.18/193.18;
+//#define Rotate_Coefficient_FL 1;
+#endif
+#ifdef LITTLE_SON
+#define Rotate_Coefficient_FL 1;
+#endif
 void ControlCMFL(void)
 {		
 	if(IOPool_hasNextRead(CMFLRxIOPool, 0))
@@ -482,7 +506,7 @@ void ControlCMFL(void)
 			
 			CM2SpeedPID.ref = - ChassisSpeedRef.forward_back_ref*0.075 
 											 + ChassisSpeedRef.left_right_ref*0.075 
-											 + ChassisSpeedRef.rotate_ref * boost;
+											 + ChassisSpeedRef.rotate_ref * boost * Rotate_Coefficient_FL;
 			CM2SpeedPID.ref = 160 * CM2SpeedPID.ref;
 			readsth = CM2SpeedPID.ref;
 			
@@ -495,6 +519,7 @@ void ControlCMFL(void)
 			#ifdef INFANTRY_4
 			CM2SpeedPID.ref =  CM2SpeedPID.ref / 1.0f;
 			#endif
+
 			CM2SpeedPID.Calc(&CM2SpeedPID);
 			
 			setMotor(CMFR, CHASSIS_SPEED_ATTENUATION * CM2SpeedPID.output);
@@ -629,6 +654,9 @@ void ControlLFRICTION(void)
 			#ifdef INFANTRY_4
 			strange_coefficient_lf = 1;
 			#endif
+			#ifdef INFANTRY_5
+			strange_coefficient_lf = 1;
+			#endif
 			//4号取正
 			LFRICTIONSpeedPID.ref = strange_coefficient_lf * friction_speed;
 			
@@ -636,7 +664,7 @@ void ControlLFRICTION(void)
 
       LFRICTIONSpeedPID.Calc(&LFRICTIONSpeedPID);
 			//4号电流取-
-			setMotor(LFRICTION, -strange_coefficient_lf * CHASSIS_SPEED_ATTENUATION * LFRICTIONSpeedPID.output);
+			setMotor(LFRICTION, strange_coefficient_lf * CHASSIS_SPEED_ATTENUATION * LFRICTIONSpeedPID.output);
 
 			s_LFRICTIONCount = 0;
 		}
