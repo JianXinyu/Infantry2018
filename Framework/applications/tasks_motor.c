@@ -59,9 +59,9 @@ fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(4.0, 0.0, 0, 10000.0, 10000.0, 1000
 #endif
 
 #ifdef INFANTRY_5
-fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(3.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 6000.0);//8,0,0
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(8.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 6000.0);//8,0,0
 fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(15.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 6000.0);//20,0,4,5
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(10, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 5000.0);//40,0,15
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(12, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 5000.0);//40,0,15
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(15.0, 0.5, 0, 10000.0, 10000.0, 10000.0, 5000.0);//30,0,5
 #define yaw_zero 7820
 #define pitch_zero 7740
@@ -361,10 +361,10 @@ void ControlPitch(void)
 			strange_coefficient_pitch = 1;
 			#endif
 			#ifdef INFANTRY_5
-			MINMAX(pitchAngleTarget, -30.0f, 45);
+			MINMAX(pitchAngleTarget, -40.0f, 60);//1:2的减速比,实际角度除以2
 			strange_coefficient_pitch = 1;
 			#endif			
-			pitchIntensity = strange_coefficient_pitch * ProcessPitchPID(pitchAngleTarget,PitchMotorAngle,-gyroYspeed);
+			pitchIntensity = strange_coefficient_pitch * ProcessPitchPID(-pitchAngleTarget,PitchMotorAngle,-gyroYspeed);
 			//pitchIntensity = 0;
 			setMotor(GMPITCH, pitchIntensity);
 			
