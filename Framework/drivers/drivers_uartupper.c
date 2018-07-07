@@ -75,7 +75,7 @@ void manifoldUartRxCpltCallback()
 	}
 	else if(autoReceiving)
 	{
-		autoBuffer[autoCnt] = temp;
+	  autoBuffer[autoCnt] = temp;
 		autoCnt++;
 		if(autoCnt>8)
 		{
@@ -83,7 +83,7 @@ void manifoldUartRxCpltCallback()
 			autoCnt = 0;
 		}
 	}
-	else if(((GetWorkState()==RUNE_STATE&&zyRuneMode == 3) || (GetWorkState()==RUNE_STATE&&zyRuneMode == 8)) && (checkRecTime > 200))
+	else if(((GetWorkState()==RUNE_STATE&&zyRuneMode == 4) || (GetWorkState()==RUNE_STATE&&zyRuneMode == 8)) && (checkRecTime > 200))
 	{
 		if(temp > 0 && temp < 10)
 		{
@@ -104,8 +104,10 @@ void manifoldUartRxCpltCallback()
 	HAL_UART_AbortReceive((&MANIFOLD_UART));
 	if(HAL_UART_Receive_DMA(&MANIFOLD_UART, &runeLocation, 1) != HAL_OK)
 	{
-		Error_Handler();
-		printf( "ManifoldUart error" );
+		huart3.RxState = HAL_UART_STATE_READY;
+    __HAL_UNLOCK(&huart3);
+//		Error_Handler();
+//		printf( "ManifoldUart error" );
 	} 
 	if( xHigherPriorityTaskWoken == pdTRUE )
 	{
@@ -361,4 +363,12 @@ void zyLocationInit(Location_Number_s * Rune3Position)//(float yaw_center,float 
   Location_Number[8].yaw_position = yaw_center - yMinusZy;
 	Location_Number[8].pitch_position = pitch_center - pMinusZy;
 	*/
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if(__HAL_UART_GET_FLAG(huart,UART_FLAG_ORE) != RESET) 
+    {
+        __HAL_UART_CLEAR_OREFLAG(huart);
+    }
 }

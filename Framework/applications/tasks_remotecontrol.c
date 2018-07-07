@@ -282,8 +282,8 @@ extern uint8_t bigRuneMSG[4];
 uint16_t fbss;
 float auto_kpx = 0.006f;
 float auto_kpy = 0.006f;
-float rune_kpx = 0.0005f;
-float rune_kpy = 0.0005f;
+float rune_kpx = 0.005f;
+float rune_kpy = 0.005f;
 extern uint8_t auto_getting;
 extern uint16_t autoBuffer[10];
 uint16_t tmpx,tmpy;
@@ -431,7 +431,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		}
 		if(key->v == 8192)//c
 		{
-			now_friction_speed = 10000;
+			now_friction_speed = 7500;
 			friction_speed = 7500;
 			LASER_ON();
 			realBulletSpeed = 28.0f;
@@ -509,7 +509,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		}
 
 		MouseShootControl(mouse,key);
-		if(RC_CtrlData.key.v == 1024)//小符 G
+		if(RC_CtrlData.key.v == 1024)// G
 		{
 			//LASER_OFF();
 			zyRuneMode=0;
@@ -520,7 +520,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 //			yawAngleTarget = Location_Number[4].yaw_position;
 //			pitchAngleTarget = Location_Number[4].pitch_position;
 //			ShootOneBullet();
-		}else if(RC_CtrlData.key.v == 32768)//大符 B
+		}else if(RC_CtrlData.key.v == 32768)// B
 		{
 			//LASER_OFF();
 			zyRuneMode=5;
@@ -542,37 +542,66 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  
 		yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
 		
-		if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA1))
+		
+		tmpx = (0x0000 | autoBuffer[2] | autoBuffer[1]<<8);
+		tmpy = (0x0000 | autoBuffer[5] | autoBuffer[4]<<8);
+		
+		if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB1 || autoBuffer[3] == 0xB2 || autoBuffer[3] == 0xB3 || autoBuffer[3] == 0xB4))
 		{
-			tmpx = (0x0000 | autoBuffer[2] | autoBuffer[1]<<8);
-			tmpy = (0x0000 | autoBuffer[5] | autoBuffer[4]<<8);
+			if(autoBuffer[3] != 0xB4 && zyRuneMode != 4 && zyRuneMode != 8)
+			{
 			pitchAngleTarget -= (tmpy - auto_y_default) * rune_kpy;
 			yawAngleTarget -= (tmpx - auto_x_default) * rune_kpx;
-			autoBuffer[3] = 0x00;
-		}
-		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 0 || zyRuneMode == 5))
-		{
-			pRunePosition[0].pitch_position=pitchAngleTarget;
-			pRunePosition[0].yaw_position=yawAngleTarget;
-			zyRuneMode++;
-			autoBuffer[3] = 0x00;
-		}
-		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 1 || zyRuneMode == 6))
-		{
-			pRunePosition[1].pitch_position=pitchAngleTarget;
-			pRunePosition[1].yaw_position=yawAngleTarget;
-			zyRuneMode++;
-			autoBuffer[3] = 0x00;
-		}
-		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 2 || zyRuneMode == 7))
-		{
-			pRunePosition[2].pitch_position=pitchAngleTarget;
-			pRunePosition[2].yaw_position=yawAngleTarget;
-			zyLocationInit(pRunePosition);
-			zyRuneMode++;
-			autoBuffer[3] = 0x00;
-		}
+			}
+		
+//		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 0 || zyRuneMode == 5))
+//		{
+//			pRunePosition[0].pitch_position=pitchAngleTarget;
+//			pRunePosition[0].yaw_position=yawAngleTarget;
+//			zyRuneMode++;
+//			autoBuffer[3] = 0x00;
+//		}
+//		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 1 || zyRuneMode == 6))
+//		{
+//			pRunePosition[1].pitch_position=pitchAngleTarget;
+//			pRunePosition[1].yaw_position=yawAngleTarget;
+//			zyRuneMode++;
+//			autoBuffer[3] = 0x00;
+//		}
+//		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 2 || zyRuneMode == 7))
+//		{
+//			pRunePosition[2].pitch_position=pitchAngleTarget;
+//			pRunePosition[2].yaw_position=yawAngleTarget;
+//			zyLocationInit(pRunePosition);
+//			zyRuneMode++;
+//			autoBuffer[3] = 0x00;
+//		}
 
+		if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB2) && (zyRuneMode == 1 || zyRuneMode == 5))
+		{
+			pRunePosition[0].pitch_position = pitchAngleTarget;
+			pRunePosition[0].yaw_position = yawAngleTarget;
+			autoBuffer[3] = 0x00;
+			zyRuneMode++;
+		}
+		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB3) && (zyRuneMode == 2 || zyRuneMode == 6))
+		{
+			pRunePosition[1].pitch_position = pitchAngleTarget;
+			pRunePosition[1].yaw_position = yawAngleTarget;
+			autoBuffer[3] = 0x00;
+			zyRuneMode++;
+		}
+		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB4) && (zyRuneMode == 3 || zyRuneMode == 7))
+		{
+			pRunePosition[2].pitch_position = pitchAngleTarget;
+			pRunePosition[2].yaw_position = yawAngleTarget;
+			autoBuffer[3] = 0x00;
+			zyLocationInit(pRunePosition);
+			zyRuneMode++;		
+		}
+		else autoBuffer[3] = 0x00;
+		}
+			
 		switch(RC_CtrlData.key.v)
 		{
 			case 64://q
@@ -627,14 +656,15 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		if(RC_CtrlData.key.v == 1024)//小符 G
 		{
 			//LASER_OFF();
-			zyRuneMode=0;
+			zyRuneMode=1;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
 			g_friction_wheel_state = FRICTION_WHEEL_ON;
 			friction_speed = now_friction_speed;
 //			yawAngleTarget = Location_Number[4].yaw_position;
 //			pitchAngleTarget = Location_Number[4].pitch_position;
 //			ShootOneBullet();
-		}else if(RC_CtrlData.key.v == 32768)//大符 B
+		}
+			else if(RC_CtrlData.key.v == 32768)// B
 		{
 			//LASER_OFF();
 			zyRuneMode=5;

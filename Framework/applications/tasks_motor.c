@@ -68,11 +68,11 @@ fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(15.0, 0.5, 0, 10000.0, 10000.0, 100
 #endif
 
 #ifdef LITTLE_SON
-fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(8.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 6000.0);
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(5.0, 2, 5, 10000.0, 10000.0, 10000.0, 6000.0);
 fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(15.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 6000.0);
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(12, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 5000.0);
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(5, 0.0, 0, 10000.0, 10000.0, 10000.0, 5000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(15.0, 0.5, 0, 10000.0, 10000.0, 10000.0, 5000.0);
-#define yaw_zero 3920
+#define yaw_zero 7400
 #define pitch_zero 4555
 #endif
 
@@ -142,9 +142,9 @@ extern float realBulletSpeed;
 extern uint16_t remainHeat;
 extern float realBulletSpeed;
 extern uint8_t burst;
-extern uint16_t autoBuffer[10];
-extern float gyroZAngle;
-extern float gyroXspeed,gyroYspeed,gyroZspeed;
+//extern uint16_t autoBuffer[10];
+extern float gyroYAngle, gyroZAngle;
+extern float gyroXspeed, gyroYspeed, gyroZspeed;
 extern float zeroGyro;
 float deltaGyro;
 float readsth;
@@ -153,10 +153,12 @@ float friction_speed = 0;
 //该系数是为了解决电机电流必须取反的问题, 尚未找出原因
 int strange_coefficient_yaw = 1;
 int strange_coefficient_pitch_intensity = 1;
-int strange_coefficient_lf = 1;
-int strange_coefficient_rf = 1;
+int strange_coefficient_lf_intensity = 1;
+int strange_coefficient_rf_intensity = 1;
 //该系数是为了解决电机反转的问题
 int strange_coefficient_pitch_dir = 1;
+int strange_coefficient_lf_dir = 1;
+int strange_coefficient_rf_dir = 1;
 
 void CMGMControlTask(void const * argument)
 {
@@ -169,7 +171,7 @@ void CMGMControlTask(void const * argument)
 		ControlPitch();
 
 	 
-	//	ChassisSpeedRef.rotate_ref = 0;//取消底盘跟随
+//		ChassisSpeedRef.rotate_ref = 0;//取消底盘跟随
 		ControlCMFL();
 		ControlCMFR();
 		ControlCMBL();
@@ -217,9 +219,9 @@ void ControlYaw(void)
 			IOPool_getNextRead(GMYAWRxIOPool, 0); 
 	//		fw_printfln("yaw%d",IOPool_pGetReadData(GMYAWRxIOPool, 0)->angle);
 			findyawzero = (IOPool_pGetReadData(GMYAWRxIOPool, 0)->angle);
-//			yawMotorAngle = (IOPool_pGetReadData(GMYAWRxIOPool, 0)->angle - yawZeroAngle) * 360 / 8192.0f;
-//			NORMALIZE_ANGLE180(yawMotorAngle);
-//			yawRealAngle = yawMotorAngle;
+/*			yawMotorAngle = (IOPool_pGetReadData(GMYAWRxIOPool, 0)->angle - yawZeroAngle) * 360 / 8192.0f;
+			NORMALIZE_ANGLE180(yawMotorAngle);
+			yawRealAngle = yawMotorAngle;*/
 	
 			GMYAWThisAngle = (IOPool_pGetReadData(GMYAWRxIOPool, 0)->angle);
 			if(isGMYawFirstEnter == 1)
@@ -243,29 +245,19 @@ void ControlYaw(void)
 							 yawMotorAngle = yawMotorAngle + (GMYAWThisAngle - GMYAWLastAngle) * 360 / 8192.0f;
 				}
 			GMYAWLastAngle = GMYAWThisAngle;
-			NORMALIZE_ANGLE180(yawMotorAngle);	
+			NORMALIZE_ANGLE180(yawMotorAngle);
 			if(GetWorkState() == NORMAL_STATE || GetWorkState() == PREPARE_STATE) 
 			{
 				//yawRealAngle = -ZGyroModuleAngle;//yawrealangle的值改为复位后陀螺仪的绝对值，进行yaw轴运动设定
 				//deltaGyro = gyroZAngle - zeroGyro;
-//			if(isGMYawFirstEnter == 1)
-//			{
-//				yawRealAngle = yawMotorAngle;
-//				isGMYawFirstEnter = 0;
-//			}
+			if(isGMYawFirstEnter == 1)
+			{
+				yawRealAngle = yawMotorAngle;
+				isGMYawFirstEnter = 0;
+			}
 //			else yawRealAngle = NORMALIZE_ANGLE180(deltaGyro);
 //				if(isGMYawFirstEnter == 0) yawRealAngle = NORMALIZE_ANGLE180(deltaGyro);
 				GMYAWGyroThisAngle = gyroZAngle;
-				if(isGMYawGyroFirstEnter == 1)
-					{
-						GMYAWGyroLastAngle = GMYAWGyroThisAngle;
-						yawRealAngle = gyroZAngle - zeroGyro;
-						isGMYawGyroFirstEnter = 0;
-					}
-				else if(GetWorkState() == PREPARE_STATE)
-				{
-					yawRealAngle = yawMotorAngle;
-				}
 				if(GMYAWGyroThisAngle <= GMYAWGyroLastAngle)
 					{
 							if((GMYAWGyroLastAngle-GMYAWGyroThisAngle) > 180)
@@ -282,6 +274,18 @@ void ControlYaw(void)
 					}
 				GMYAWGyroLastAngle = GMYAWGyroThisAngle ;
 			}
+			
+ 			if(isGMYawGyroFirstEnter == 1)
+					{
+						GMYAWGyroLastAngle = GMYAWGyroThisAngle;
+						yawRealAngle = gyroZAngle - zeroGyro;
+						isGMYawGyroFirstEnter = 0;
+					}
+				else if(GetWorkState() == PREPARE_STATE)
+				{
+					yawRealAngle = yawMotorAngle;
+				}
+
 			/*else if(GetWorkState()==RUNE_STATE)
 			{
 				//fw_printfln("Rune State:%f",yawAngleTarget);
@@ -296,10 +300,13 @@ void ControlYaw(void)
 			#endif
 			#ifdef INFANTRY_5
 				strange_coefficient_yaw = -1;
-			#endif						
+			#endif
+			#ifdef LITTLE_SON 
+				strange_coefficient_yaw = -1;
+			#endif				
 			yawIntensity = strange_coefficient_yaw * ProcessYawPID(yawAngleTarget, yawRealAngle, -gyroZspeed);
 			
-			//yawIntensity = 0;
+		//	yawIntensity = 0;
 			setMotor(GMYAW, yawIntensity);
 			s_yawCount = 0;
 
@@ -314,8 +321,9 @@ void ControlYaw(void)
 }
 
 int16_t pitchIntensity = 0;
-int isPitchMotorFirstEnter = 1;
+int isPitchMotorFirstEnter = 1, isPitchGyroFirstEnter = 1;
 float PitchMotorThisAngle, PitchMotorLastAngle;
+float PitchGyroThisAngle, PitchGyroLastAngle;
 /*Pitch电机*/
 void ControlPitch(void)
 {
@@ -352,10 +360,29 @@ void ControlPitch(void)
 				}
 			PitchMotorLastAngle = PitchMotorThisAngle;
 			NORMALIZE_ANGLE180(PitchMotorAngle);
-			pitchRealAngle = -PitchMotorAngle;
 			
-//			pitchRealAngle = -(IOPool_pGetReadData(GMPITCHRxIOPool, 0)->angle - pitchZeroAngle) * 360 / 8192.0;
-//			NORMALIZE_ANGLE180(pitchRealAngle);
+				PitchGyroThisAngle = gyroYAngle;
+				if(isPitchGyroFirstEnter == 1)
+					{
+						PitchGyroLastAngle = PitchGyroThisAngle;
+						pitchRealAngle = NORMALIZE_ANGLE180(gyroYAngle);
+						isPitchGyroFirstEnter = 0;
+					}
+				if(PitchGyroThisAngle <= PitchGyroLastAngle)
+					{
+							if((PitchGyroLastAngle-PitchGyroThisAngle) > 180)
+								 pitchRealAngle = pitchRealAngle + (PitchGyroThisAngle+360-PitchGyroLastAngle);
+							else
+								 pitchRealAngle = pitchRealAngle + (PitchGyroThisAngle - PitchGyroLastAngle);
+					}
+				else
+					{
+							if((PitchGyroThisAngle-PitchGyroLastAngle) > 180)
+								 pitchRealAngle = pitchRealAngle - (PitchGyroLastAngle+360-PitchGyroThisAngle);
+							else
+								 pitchRealAngle = pitchRealAngle + (PitchGyroThisAngle - PitchGyroLastAngle);
+					}
+				PitchGyroLastAngle = PitchGyroThisAngle ;
 		
 			#ifdef INFANTRY_1
 			MINMAX(pitchAngleTarget, -30.0f, 30);
@@ -374,10 +401,11 @@ void ControlPitch(void)
 			#ifdef LITTLE_SON
 			MINMAX(pitchAngleTarget, -30.0f, 60);
 			strange_coefficient_pitch_intensity = -1;
-			strange_coefficient_pitch_dir = 1;	
+			strange_coefficient_pitch_dir = -1;	
 			#endif			
-			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,PitchMotorAngle,-gyroYspeed);
-			//pitchIntensity = 0;
+//			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,PitchMotorAngle,-gyroYspeed);
+			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,2 * pitchRealAngle,-gyroYspeed);
+//			pitchIntensity = 0;
 			setMotor(GMPITCH, pitchIntensity);
 			
 			s_pitchCount = 0;
@@ -664,19 +692,25 @@ void ControlLFRICTION(void)
 			IOPool_getNextRead(LFRICTIONRxIOPool, 0);
 			Motor820RRxMsg_t *pData = IOPool_pGetReadData(LFRICTIONRxIOPool, 0);
 			#ifdef INFANTRY_4
-			strange_coefficient_lf = 1;
+			strange_coefficient_lf_dir = 1;
+			strange_coefficient_lf_intensity = -1;
 			#endif
 			#ifdef INFANTRY_5
-			strange_coefficient_lf = 1;
+			strange_coefficient_lf_dir = 1;
+			strange_coefficient_lf_intensity = 1;
 			#endif
-			//4号取正
-			LFRICTIONSpeedPID.ref = strange_coefficient_lf * friction_speed;
+			#ifdef LITTLE_SON
+			strange_coefficient_lf_dir = 1;
+			strange_coefficient_lf_intensity = -1;
+			#endif
+			
+			LFRICTIONSpeedPID.ref = strange_coefficient_lf_dir * friction_speed;
 			
 			LFRICTIONSpeedPID.fdb = pData->RotateSpeed;
 
       LFRICTIONSpeedPID.Calc(&LFRICTIONSpeedPID);
-			//4号电流取-
-			setMotor(LFRICTION, strange_coefficient_lf * CHASSIS_SPEED_ATTENUATION * LFRICTIONSpeedPID.output);
+			
+			setMotor(LFRICTION, strange_coefficient_lf_intensity * CHASSIS_SPEED_ATTENUATION * LFRICTIONSpeedPID.output);
 
 			s_LFRICTIONCount = 0;
 		}
@@ -697,15 +731,23 @@ void ControlRFRICTION(void)
 			Motor820RRxMsg_t *pData = IOPool_pGetReadData(RFRICTIONRxIOPool, 0);
 			
 			#ifdef INFANTRY_4
-			strange_coefficient_rf = 1;
+			strange_coefficient_rf_dir = -1;
+			strange_coefficient_rf_intensity = 1;
 			#endif
-			//4号取-
-			RFRICTIONSpeedPID.ref = -strange_coefficient_rf * friction_speed;
+			#ifdef INFANTRY_5
+			strange_coefficient_rf_dir = -1;
+			strange_coefficient_rf_intensity = 1;
+			#endif
+			#ifdef LITTLE_SON
+			strange_coefficient_rf_dir = -1;
+			strange_coefficient_rf_intensity = 1;
+			#endif
+			RFRICTIONSpeedPID.ref = strange_coefficient_rf_dir * friction_speed;
 			RFRICTIONSpeedPID.fdb = pData->RotateSpeed;
 			
 			RFRICTIONSpeedPID.Calc(&RFRICTIONSpeedPID);
-			//4号电流取+
-			setMotor(RFRICTION, strange_coefficient_rf * CHASSIS_SPEED_ATTENUATION * RFRICTIONSpeedPID.output);
+
+			setMotor(RFRICTION, strange_coefficient_rf_intensity * CHASSIS_SPEED_ATTENUATION * RFRICTIONSpeedPID.output);
 
 			s_RFRICTIONCount = 0;
 		}

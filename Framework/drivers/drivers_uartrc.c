@@ -79,7 +79,7 @@ static uint16_t CNT_1s = 75;	//用于避免四连发模式下两秒内连射8发
 static uint16_t CNT_250ms = 18;	//用于点射模式下射频限制
 extern uint8_t burst;
 extern float friction_speed;
-float now_friction_speed = 5000;
+float now_friction_speed = 6500;
 
 RampGen_t frictionRamp = RAMP_GEN_DAFAULT;  
 RampGen_t LRSpeedRamp = RAMP_GEN_DAFAULT;   
