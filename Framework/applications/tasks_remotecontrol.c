@@ -282,14 +282,19 @@ extern uint8_t bigRuneMSG[4];
 uint16_t fbss;
 float auto_kpx = 0.006f;
 float auto_kpy = 0.006f;
+float rune_kpx = 0.0005f;
+float rune_kpy = 0.0005f;
 extern uint8_t auto_getting;
 extern uint16_t autoBuffer[10];
 uint16_t tmpx,tmpy;
 uint16_t auto_x_default = 320;
-uint16_t auto_y_default = 380;
+uint16_t auto_y_default = 240;
 extern float friction_speed;
 extern float now_friction_speed;
 extern float realBulletSpeed;
+extern uint8_t zyRuneMode;
+extern Location_Number_s pRunePosition[3];
+extern Location_Number_s Location_Number[];
 void MouseKeyControlProcess(Mouse *mouse, Key *key)
 {
 	//++delayCnt;
@@ -308,6 +313,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 	
 		tmpx = (0x0000 | autoBuffer[2] | autoBuffer[1]<<8);
 		tmpy = (0x0000 | autoBuffer[5] | autoBuffer[4]<<8);
+		
 		if((autoBuffer[3] == 0xA6 || autoBuffer[3] == 0xA8) && (key->v&256))
 		{
 			pitchAngleTarget -= (tmpy - auto_y_default) * auto_kpy;
@@ -385,7 +391,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 			ChassisSpeedRef.left_right_ref = 0;
 			LRSpeedRamp.ResetCounter(&LRSpeedRamp);
 		}
-		if(key->v & 0x80)	//key:e  检测第8位是不是1
+		if(key->v & 0x80)	//key:e the chassis turn right 45 degree
 		{
 			if(shootdir < 45 && dircnt >= 30)
 			{
@@ -399,7 +405,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 //				delayCnt = 0;
 //			}
 		}
-		if(key->v & 0x40)	//key:q
+		if(key->v & 0x40)	//key:q the chassis turn left 45 degree
 		{
 			if(shootdir > -45 && dircnt >= 30)
 			{
@@ -503,14 +509,69 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		}
 
 		MouseShootControl(mouse,key);
+		if(RC_CtrlData.key.v == 1024)//小符 G
+		{
+			//LASER_OFF();
+			zyRuneMode=0;
+			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
+			g_friction_wheel_state = FRICTION_WHEEL_ON;
+			friction_speed = now_friction_speed;
+			g_workState=RUNE_STATE;
+//			yawAngleTarget = Location_Number[4].yaw_position;
+//			pitchAngleTarget = Location_Number[4].pitch_position;
+//			ShootOneBullet();
+		}else if(RC_CtrlData.key.v == 32768)//大符 B
+		{
+			//LASER_OFF();
+			zyRuneMode=5;
+			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
+			g_friction_wheel_state = FRICTION_WHEEL_ON;
+			friction_speed = now_friction_speed;
+			g_workState=RUNE_STATE;
+//			yawAngleTarget = Location_Number[4].yaw_position;
+//			pitchAngleTarget = Location_Number[4].pitch_position;
+//			ShootOneBullet();
+		}
 	}
 	else if(GetWorkState() == RUNE_STATE)
 	{
 		VAL_LIMIT(mouse->x, -150, 150); 
 		VAL_LIMIT(mouse->y, -150, 150); 
+		
 	
 		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  
 		yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
+		
+		if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA1))
+		{
+			tmpx = (0x0000 | autoBuffer[2] | autoBuffer[1]<<8);
+			tmpy = (0x0000 | autoBuffer[5] | autoBuffer[4]<<8);
+			pitchAngleTarget -= (tmpy - auto_y_default) * rune_kpy;
+			yawAngleTarget -= (tmpx - auto_x_default) * rune_kpx;
+			autoBuffer[3] = 0x00;
+		}
+		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 0 || zyRuneMode == 5))
+		{
+			pRunePosition[0].pitch_position=pitchAngleTarget;
+			pRunePosition[0].yaw_position=yawAngleTarget;
+			zyRuneMode++;
+			autoBuffer[3] = 0x00;
+		}
+		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 1 || zyRuneMode == 6))
+		{
+			pRunePosition[1].pitch_position=pitchAngleTarget;
+			pRunePosition[1].yaw_position=yawAngleTarget;
+			zyRuneMode++;
+			autoBuffer[3] = 0x00;
+		}
+		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xA2) && (zyRuneMode == 2 || zyRuneMode == 7))
+		{
+			pRunePosition[2].pitch_position=pitchAngleTarget;
+			pRunePosition[2].yaw_position=yawAngleTarget;
+			zyLocationInit(pRunePosition);
+			zyRuneMode++;
+			autoBuffer[3] = 0x00;
+		}
 
 		switch(RC_CtrlData.key.v)
 		{
@@ -566,18 +627,23 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		if(RC_CtrlData.key.v == 1024)//小符 G
 		{
 			//LASER_OFF();
-			zyRuneMode=5;
+			zyRuneMode=0;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
+			g_friction_wheel_state = FRICTION_WHEEL_ON;
+			friction_speed = now_friction_speed;
+//			yawAngleTarget = Location_Number[4].yaw_position;
+//			pitchAngleTarget = Location_Number[4].pitch_position;
+//			ShootOneBullet();
 		}else if(RC_CtrlData.key.v == 32768)//大符 B
 		{
 			//LASER_OFF();
-			zyRuneMode=3;
+			zyRuneMode=5;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
+			g_friction_wheel_state = FRICTION_WHEEL_ON;
+			friction_speed = now_friction_speed;
+//			yawAngleTarget = Location_Number[4].yaw_position;
+//			pitchAngleTarget = Location_Number[4].pitch_position;
+//			ShootOneBullet();
 		}
 	}
 }
-
-
-
-
-

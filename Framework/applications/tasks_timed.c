@@ -74,6 +74,9 @@ extern float pitchRealAngle;
 extern float gYroZs;
 extern float yawAngleTarget;
 extern float yawRealAngle;
+extern float friction_speed;
+extern float now_friction_speed;
+extern FrictionWheelState_e g_friction_wheel_state ;
 
 extern uint8_t JUDGE_STATE;
 
@@ -268,6 +271,9 @@ void WorkStateFSM(void)
 					zyRuneMode=0;
 					LASER_ON();
 					g_workState=RUNE_STATE;
+					g_friction_wheel_state = FRICTION_WHEEL_ON;
+					friction_speed = now_friction_speed;
+					//HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
 				}
 				
 			}
@@ -320,44 +326,44 @@ void WorkStateFSM(void)
 			{
 				g_workState = NORMAL_STATE;
 				g_switchRead = 0;
-				zyRuneMode=4;
+				zyRuneMode=0;
 			}
-			else if(GetInputMode() == KEY_MOUSE_INPUT
-								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==0)
-			{
-				g_switchRead = 0;
-				if(checkKeyTime>450)
-				{
-					checkKeyTime=0;
-					pRunePosition[0].pitch_position=pitchAngleTarget;
-					pRunePosition[0].yaw_position=yawAngleTarget;
-					zyRuneMode++;
-				}
-			}
-			else if(GetInputMode() == KEY_MOUSE_INPUT
-								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==1)
-			{
-				g_switchRead = 0;
-				if(checkKeyTime>450)
-				{
-					checkKeyTime=0;
-					pRunePosition[1].pitch_position=pitchAngleTarget;
-					pRunePosition[1].yaw_position=yawAngleTarget;
-					zyRuneMode++;
-				}
-			}else if(GetInputMode() == KEY_MOUSE_INPUT
-								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==2)
-			{
-				g_switchRead = 0;
-				if(checkKeyTime>450)
-				{
-					checkKeyTime=0;
-					pRunePosition[2].pitch_position=pitchAngleTarget;
-					pRunePosition[2].yaw_position=yawAngleTarget;
-					zyLocationInit(pRunePosition);
-					zyRuneMode=4;
-				}
-			}
+//			else if(GetInputMode() == KEY_MOUSE_INPUT
+//								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==0)
+//			{
+//				g_switchRead = 0;
+//				if(checkKeyTime>450)
+//				{
+//					checkKeyTime=0;
+//					pRunePosition[0].pitch_position=pitchAngleTarget;
+//					pRunePosition[0].yaw_position=yawAngleTarget;
+//					zyRuneMode++;
+//				}
+//			}
+//			else if(GetInputMode() == KEY_MOUSE_INPUT
+//								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==1)
+//			{
+//				g_switchRead = 0;
+//				if(checkKeyTime>450)
+//				{
+//					checkKeyTime=0;
+//					pRunePosition[1].pitch_position=pitchAngleTarget;
+//					pRunePosition[1].yaw_position=yawAngleTarget;
+//					zyRuneMode++;
+//				}
+//			}else if(GetInputMode() == KEY_MOUSE_INPUT
+//								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==2)
+//			{
+//				g_switchRead = 0;
+//				if(checkKeyTime>450)
+//				{
+//					checkKeyTime=0;
+//					pRunePosition[2].pitch_position=pitchAngleTarget;
+//					pRunePosition[2].yaw_position=yawAngleTarget;
+//					zyLocationInit(pRunePosition);
+//					zyRuneMode=4;
+//				}
+//			}
 		}break;
 		default:
 		{
@@ -427,6 +433,7 @@ void WorkStateSwitchProcess(void)
 
 }
   
+
 void RuneShootControl(void) 
 { 
 	if(g_workState == RUNE_STATE)
@@ -454,6 +461,7 @@ void RuneShootControl(void)
 			case FRICTION_WHEEL_ON:
 			{
 //				SetShootState(SHOOTING);
+				
 			} break;				
 		}
 	}

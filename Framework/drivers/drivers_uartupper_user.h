@@ -1,13 +1,13 @@
 /**
   ******************************************************************************
   * File Name          : drivers_uartupper_low.h
-  * Description        : å¦™ç®—é€šä¿¡
+  * Description        : ÃîËãÍ¨ĞÅ
   ******************************************************************************
   *
   * Copyright (c) 2017 Team TPP-Shanghai Jiao Tong University
   * All rights reserved.
   *
-  * å¤§ç¥ç¬¦ã€è‡ªç„ç›¸å…³å‡½æ•°
+  * ½á¹¹Ìå,º¯Êı¶¨Òå
   ******************************************************************************
   */
 #ifndef DRIVERS_UARTUPPER_USER_H
@@ -57,6 +57,6 @@ IOPoolDeclare(ctrlUartIOPool, struct{uint8_t ch[size_frame];});
 void manifoldUartRxCpltCallback(void);
 
 //void zyLocationInit(float yaw_center, float pitch_center);
-void zyLocationInit(Location_Number_s * Rune3Position);//å¼ é›å¤§ç¬¦åˆå§‹
+void zyLocationInit(Location_Number_s * Rune3Position);
 
 #endif

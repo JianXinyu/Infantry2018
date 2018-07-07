@@ -37,6 +37,8 @@
 #define    CMBLIntensity_MAX   5900.f
 #define    CMBRIntensity_MAX   5900.f
 
+#define	CM_current_full 2730.0f
+
 void RestrictPower(int16_t *intensity1, int16_t *intensity2, int16_t *intensity3, int16_t *intensity4);
 void dynamicUpperBound(void);
 #endif

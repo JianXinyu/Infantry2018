@@ -102,8 +102,29 @@ void setMotor(MotorId motorId, int16_t Intensity){
 	float CMFLIntensity_max = CMFLIntensity_MAX;
 	float CMFRIntensity_max = CMFRIntensity_MAX;
 	float CMBLIntensity_max = CMBLIntensity_MAX;
-	float CMBRIntensity_max = CMBRIntensity_MAX;
+	float CMBRIntensity_max = CMBRIntensity_MAX;\
+	float sum = 0;
 	
+	if (JUDGE_State == OFFLINE)
+	{
+		 CM_current_max = 13000;
+		 CMFLIntensity_max = 4500;
+		 CMFRIntensity_max = 4500;
+		 CMBLIntensity_max = 4500;
+		 CMBRIntensity_max = 4500;
+	}
+	
+	//林炳辉仿桂电功率控制策略
+	else if(PowerHeatData.chassisPowerBuffer-PowerHeatData.chassisPower*0.26f < 7.0f)
+	{
+			sum = (abs(CMFLIntensity) + abs(CMFRIntensity) + abs(CMBLIntensity) + abs(CMBRIntensity));
+			float realPowerBuffer = PowerHeatData.chassisPowerBuffer;
+			//float realPower = PowerHeatData.chassisPower;
+			CMFLIntensity = (CMFLIntensity/(sum+1.0f))*CM_current_full*(1.0f+realPowerBuffer*0.03f);
+			CMFRIntensity = (CMFRIntensity/(sum+1.0f))*CM_current_full*(1.0f+realPowerBuffer*0.03f);
+			CMBLIntensity = (CMBLIntensity/(sum+1.0f))*CM_current_full*(1.0f+realPowerBuffer*0.03f);
+			CMBRIntensity = (CMBRIntensity/(sum+1.0f))*CM_current_full*(1.0f+realPowerBuffer*0.03f);
+	}
 	//40-50
 	//10-40ԵҽО׆
 //	if (realPowerBuffer > 40)
@@ -141,22 +162,22 @@ void setMotor(MotorId motorId, int16_t Intensity){
 //		 CMBRIntensity_max = 0;
 //	}
 
-	if (JUDGE_State == OFFLINE)
-	{
-		 CM_current_max = 13000;
-		 CMFLIntensity_max = 4500;
-		 CMFRIntensity_max = 4500;
-		 CMBLIntensity_max = 4500;
-		 CMBRIntensity_max = 4500;
-	}
-	if (going || GetInputMode() == REMOTE_INPUT)
-	{
-		 CM_current_max = 25000;
-		 CMFLIntensity_max = 7000;
-		 CMFRIntensity_max = 7000;
-		 CMBLIntensity_max = 7000;
-		 CMBRIntensity_max = 7000;
-	}
+//	if (JUDGE_State == OFFLINE)
+//	{
+//		 CM_current_max = 13000;
+//		 CMFLIntensity_max = 4500;
+//		 CMFRIntensity_max = 4500;
+//		 CMBLIntensity_max = 4500;
+//		 CMBRIntensity_max = 4500;
+//	}
+//	if (going || GetInputMode() == REMOTE_INPUT)
+//	{
+//		 CM_current_max = 25000;
+//		 CMFLIntensity_max = 7000;
+//		 CMFRIntensity_max = 7000;
+//		 CMBLIntensity_max = 7000;
+//		 CMBRIntensity_max = 7000;
+//	}
 	
 
 //	float sum = (abs(CMFLIntensity) + abs(CMFRIntensity) + abs(CMBLIntensity) + abs(CMBRIntensity));
@@ -201,13 +222,13 @@ void setMotor(MotorId motorId, int16_t Intensity){
 //		CMBRIntensity = (CM_current_max/sum)*CMBRIntensity;
 //	}
 	
-	if(realPower >= 70 && JUDGE_State == ONLINE)
-	{
-		CMFLIntensity = 0.6*CMFLIntensity;
-		CMFRIntensity = 0.6*CMFRIntensity;
-		CMBLIntensity = 0.6*CMBLIntensity;
-		CMBRIntensity = 0.6*CMBRIntensity;
-	}
+//	if(realPower >= 70 && JUDGE_State == ONLINE)
+//	{
+//		CMFLIntensity = 0.6*CMFLIntensity;
+//		CMFRIntensity = 0.6*CMFRIntensity;
+//		CMBLIntensity = 0.6*CMBLIntensity;
+//		CMBRIntensity = 0.6*CMBRIntensity;
+//	}
 	
 	if(GetWorkState() == STOP_STATE || g_bInited != 1)
 	{

@@ -61,6 +61,7 @@ void manifoldUartRxCpltCallback()
 	uint8_t *pData = &runeLocation;
 	int temp=*pData;
 	
+	
 	if(temp == 0xA5 && autoReceiving == 0)
 	{
 		autoReceiving = 1;
@@ -76,10 +77,15 @@ void manifoldUartRxCpltCallback()
 	{
 		autoBuffer[autoCnt] = temp;
 		autoCnt++;
+		if(autoCnt>8)
+		{
+			autoReceiving = 0;
+			autoCnt = 0;
+		}
 	}
-	else if(((GetWorkState()==RUNE_STATE&&zyRuneMode == 3) || (GetWorkState()==RUNE_STATE&&zyRuneMode == 5)) && (checkRecTime > 200))
+	else if(((GetWorkState()==RUNE_STATE&&zyRuneMode == 3) || (GetWorkState()==RUNE_STATE&&zyRuneMode == 8)) && (checkRecTime > 200))
 	{
-		if(temp != 0)
+		if(temp > 0 && temp < 10)
 		{
 			yawAngleTarget = Location_Number[temp-1].yaw_position;
 			pitchAngleTarget = Location_Number[temp-1].pitch_position;
@@ -92,7 +98,7 @@ void manifoldUartRxCpltCallback()
   }
 	else
 	{
-		fw_printfln("manifold callback:%x",*pData);
+		//fw_printfln("manifold callback:%x",*pData);
 	}
 
 	HAL_UART_AbortReceive((&MANIFOLD_UART));
