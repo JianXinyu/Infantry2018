@@ -46,7 +46,7 @@ fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(25.0, 0.0, 5, 10000.0, 10000.0, 
 fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(1, 0.0, 20, 10000.0, 10000.0, 10000.0, 3500.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(2, 0.0, 2, 10000.0, 10000.0, 10000.0, 4000.0);
 #define yaw_zero 2136
-#define pitch_zero 7087
+#define pitch_zero 7100
 #endif
 
 #ifdef INFANTRY_4
@@ -122,6 +122,7 @@ int16_t twist_target = 0;
 extern uint8_t cancel_chassis_rotate;
 
 extern float zyYawTarget,zyPitchTarget;
+uint16_t zyPlateFrequency=0,zyCurrentHeat=0;//拨盘射频(单位:Hz)
 
 
 static uint8_t s_yawCount = 0;
@@ -306,7 +307,7 @@ void ControlYaw(void)
 			#endif				
 			yawIntensity = strange_coefficient_yaw * ProcessYawPID(yawAngleTarget, yawRealAngle, -gyroZspeed);
 			
-		//	yawIntensity = 0;
+			yawIntensity = 0;
 			setMotor(GMYAW, yawIntensity);
 			s_yawCount = 0;
 
@@ -405,7 +406,7 @@ void ControlPitch(void)
 			#endif			
 //			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,PitchMotorAngle,-gyroYspeed);
 			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,2 * pitchRealAngle,-gyroYspeed);
-//			pitchIntensity = 0;
+			pitchIntensity = 0;
 			setMotor(GMPITCH, pitchIntensity);
 			
 			s_pitchCount = 0;
@@ -418,6 +419,7 @@ void ControlPitch(void)
 }
 int16_t plateIntensity = 0;
 uint16_t plate_zero = 2000;
+extern uint16_t maxHeat;
 void ControlPLATE(void)
 {
 	if(IOPool_hasNextRead(PLATERxIOPool, 0))
@@ -430,6 +432,8 @@ void ControlPLATE(void)
 			//dirread = (IOPool_pGetReadData(GMPITCHRxIOPool, 0)->angle);
 			plateThisAngle = IOPool_pGetReadData(PLATERxIOPool, 0)->angle;
 			plateRealSpeed = IOPool_pGetReadData(PLATERxIOPool, 0)->RotateSpeed;
+			
+			zyPlateFrequency=6*plateRealSpeed/(60*36);
 			
 			if(plateThisAngle<=plateLastAngle)//2006减速比36:1
 			{
@@ -448,8 +452,24 @@ void ControlPLATE(void)
 //			NORMALIZE_ANGLE180(plateRealAngle);
 
 			plateLastAngle = plateThisAngle;
-			if((JUDGE_State == ONLINE && remainHeat < realBulletSpeed) || (JUDGE_State == ONLINE && burst && remainHeat < realBulletSpeed*2+7
+			
+			if((JUDGE_State == ONLINE && remainHeat < realBulletSpeed) || (JUDGE_State == ONLINE && burst && remainHeat < realBulletSpeed*3
 				))plateAngleTarget = plateRealAngle;
+			/*if(JUDGE_State==ONLINE&&remainHeat!=666)
+			{
+				zyCurrentHeat=remainHeat;
+				remainHeat=666;
+				
+			}
+			if(burst &&(zyCurrentHeat+1.8)<((((plateRealAngle-plateAngleTarget)/60)*realBulletSpeed)*0.05))
+			{
+				plateAngleTarget = plateRealAngle;
+			}
+			zyCurrentHeat-= realBulletSpeed*(plateRealAngle-plateAngleTarget)/60;
+			if(zyCurrentHeat<0){
+				zyCurrentHeat=0;
+			}*/
+				
 			plateIntensity = PID_PROCESS_Double(PLATEPositionPID,PLATESpeedPID,plateAngleTarget,plateRealAngle,plateRealSpeed);
 			if(fabs(plateAngleTarget - plateRealAngle) < 5)plateIntensity = 0.3 * plateIntensity;
 			if(plateAngleTarget - plateRealAngle > 10 && plateAngleTarget - plateRealAngle < 100 && GetWorkState() == RUNE_STATE)plateIntensity = 20 * PID_PROCESS_Double(PLATEPositionPID,PLATESpeedPID,plateAngleTarget,plateRealAngle,plateRealSpeed);
@@ -464,6 +484,7 @@ void ControlPLATE(void)
 			setMotor(PLATE, plateIntensity);
 			
 			s_plateCount = 0;
+			
 		}
 		else
 		{
@@ -730,6 +751,10 @@ void ControlRFRICTION(void)
 			IOPool_getNextRead(RFRICTIONRxIOPool, 0);
 			Motor820RRxMsg_t *pData = IOPool_pGetReadData(RFRICTIONRxIOPool, 0);
 			
+			#ifdef INFANTRY_1
+			strange_coefficient_rf_dir = -1;
+			strange_coefficient_rf_intensity = -1;
+			#endif
 			#ifdef INFANTRY_4
 			strange_coefficient_rf_dir = -1;
 			strange_coefficient_rf_intensity = 1;

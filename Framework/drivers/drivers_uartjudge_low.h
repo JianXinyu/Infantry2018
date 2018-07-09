@@ -64,6 +64,7 @@ float y;
 float z;
 float yaw;
 }extGameRobotPos_t;
+
 typedef __packed struct
 {
 float data1;
@@ -71,6 +72,15 @@ float data2;
 float data3;
 uint8_t mask;
 }extShowData_t;
+
+typedef __packed struct
+{
+  uint8_t  sof;
+  uint16_t data_length;
+  uint8_t  seq;
+  uint8_t  crc8;
+} frame_header_t;
+//Data
 
 
 typedef enum
@@ -89,6 +99,6 @@ void Judge_Refresh_Hit();
 void Judge_Refresh_Interact();
 void Judge_Refresh_Result();
 void Judge_Refresh_Buff();
-
+void data_pack_send();
 
 #endif

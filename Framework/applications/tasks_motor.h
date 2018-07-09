@@ -16,10 +16,10 @@
 #define TASKS_MOTOR_H
 
 ///*通过define使一套程序使用多台车*/
-//#define INFANTRY_1
+#define INFANTRY_1
 //#define INFANTRY_4
 //#define INFANTRY_5                                                                           
-#define LITTLE_SON
+//#define LITTLE_SON
 
 void CMGMControlTask(void const * argument);
 void ControlYaw(void);
