@@ -41,10 +41,10 @@
 //PID_INIT(Kp, Ki, Kd, KpMax, KiMax, KdMax, OutputMax)
 //云台PID
 #ifdef INFANTRY_1
-fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(200.0, 1.0, 40, 10000.0, 10000.0, 10000.0, 6000.0);
-fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(25.0, 0.0, 5, 10000.0, 10000.0, 10000.0, 6000.0);
-fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(1, 0.0, 20, 10000.0, 10000.0, 10000.0, 3500.0);
-fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(2, 0.0, 2, 10000.0, 10000.0, 10000.0, 4000.0);
+fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(7.0, 2, 4, 10000.0, 10000.0, 10000.0, 6000.0);
+fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(15.0, 0.0, 0, 10000.0, 10000.0, 10000.0, 6000.0);
+fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(5, 0.0, 0, 10000.0, 10000.0, 10000.0, 5000.0);
+fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(15.0, 0.5, 0, 10000.0, 10000.0, 10000.0, 5000.0);
 #define yaw_zero 2136
 #define pitch_zero 7100
 #endif
@@ -307,7 +307,7 @@ void ControlYaw(void)
 			#endif				
 			yawIntensity = strange_coefficient_yaw * ProcessYawPID(yawAngleTarget, yawRealAngle, -gyroZspeed);
 			
-			yawIntensity = 0;
+			//yawIntensity = 0;
 			setMotor(GMYAW, yawIntensity);
 			s_yawCount = 0;
 
@@ -387,7 +387,8 @@ void ControlPitch(void)
 		
 			#ifdef INFANTRY_1
 			MINMAX(pitchAngleTarget, -30.0f, 30);
-			strange_coefficient_pitch_intensity = -1;
+			strange_coefficient_pitch_intensity = 1;
+			strange_coefficient_pitch_dir = -1;
 			#endif			
 			#ifdef INFANTRY_4
 			MINMAX(pitchAngleTarget, -30.0f, 60);
@@ -406,7 +407,7 @@ void ControlPitch(void)
 			#endif			
 //			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,PitchMotorAngle,-gyroYspeed);
 			pitchIntensity = strange_coefficient_pitch_intensity * ProcessPitchPID(strange_coefficient_pitch_dir * pitchAngleTarget,2 * pitchRealAngle,-gyroYspeed);
-			pitchIntensity = 0;
+//			pitchIntensity = 0;
 			setMotor(GMPITCH, pitchIntensity);
 			
 			s_pitchCount = 0;
