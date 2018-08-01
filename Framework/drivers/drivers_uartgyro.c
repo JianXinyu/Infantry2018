@@ -23,6 +23,7 @@ uint8_t gyroBuffercnt = 0;
 uint8_t gyroID = 0;
 float gyroXAngle,gyroYAngle,gyroZAngle;
 float gyroXspeed,gyroYspeed,gyroZspeed;
+float gyroXacc,gyroYacc,gyroZacc;
 void InitGyroUart(void){
 	if(HAL_UART_Receive_DMA(&GYRO_UART, &tmp_gyro, 1) != HAL_OK){
 			Error_Handler();
@@ -35,7 +36,11 @@ SUM = 0x55 + 0x52 + RollL + RollH + PitchL + PitchH + YawL + yawH + TL + TH
 角度输出
 0x55 0x53 RollL RollH PitchL PitchH YawL yawH TL TH SUM
 SUM = 0x55 + 0x53 + RollL + RollH + PitchL + PitchH + YawL + yawH + TL + TH
+加速度输出
+0x55 0x51 axL axH ayL ayH azL azH TL TH SUM
+SUM = 0x55 + 0x51 + axL + axH + ayL + ayH + azL + azH + TL + TH
 */
+
 void gyroUartRxCpltCallback(void)
 {
 	if(gyro_receiving)
@@ -58,6 +63,12 @@ void gyroUartRxCpltCallback(void)
 					gyroXspeed = ((short)(gyroBuffer[3]<<8)|gyroBuffer[2])/32768.0f*2000.0f;
 					gyroYspeed = ((short)(gyroBuffer[5]<<8)|gyroBuffer[4])/32768.0f*2000.0f;
 					gyroZspeed = ((short)(gyroBuffer[7]<<8)|gyroBuffer[6])/32768.0f*2000.0f;
+				}
+				else if(gyroBuffer[1] == 0x51)
+				{
+					gyroXacc = ((short)(gyroBuffer[3]<<8)|gyroBuffer[2])/32768.0f*16.0f;
+					gyroYacc = ((short)(gyroBuffer[5]<<8)|gyroBuffer[4])/32768.0f*16.0f;
+					gyroZacc = ((short)(gyroBuffer[7]<<8)|gyroBuffer[6])/32768.0f*16.0f;
 				}
 			}
 			gyro_receiving = 0;

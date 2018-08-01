@@ -79,7 +79,8 @@ static uint16_t CNT_1s = 75;	//用于避免四连发模式下两秒内连射8发
 static uint16_t CNT_250ms = 18;	//用于点射模式下射频限制
 extern uint8_t burst;
 extern float friction_speed;
-float now_friction_speed = 6500;
+float now_friction_speed = 6000;
+uint16_t syncCnt = 0;
 
 RampGen_t frictionRamp = RAMP_GEN_DAFAULT;  
 RampGen_t LRSpeedRamp = RAMP_GEN_DAFAULT;   
@@ -209,7 +210,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 				SetShootState(NOSHOOTING);
 				g_friction_wheel_state = FRICTION_WHEEL_ON;	 
 				LASER_ON(); 
-				friction_speed = 6500;
+				friction_speed = now_friction_speed;
 			}				 		
 		}break;
 		case FRICTION_WHEEL_START_TURNNING:
@@ -228,7 +229,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 			{
 				SetShootState(SHOOTING);
 			  RotateCNT+=1;
-				if(RotateCNT>= 25)
+				if(RotateCNT>= 1)
 				{	
 					RotateCNT = 0;
 					ShootOneBullet();
@@ -296,6 +297,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 	}
 }
 	 
+uint8_t auto_aim = 0;
 void MouseShootControl(Mouse *mouse,Key *key)
 {
 	++CNT_1s;
@@ -345,6 +347,7 @@ void MouseShootControl(Mouse *mouse,Key *key)
 				SetShootState(NOSHOOTING);
 				g_friction_wheel_state = FRICTION_WHEEL_ON;
 				friction_speed = now_friction_speed;
+				LASER_ON();
 			}				 		
 		}break;
 		case FRICTION_WHEEL_START_TURNNING:
@@ -381,11 +384,13 @@ void MouseShootControl(Mouse *mouse,Key *key)
 		{
 			if(mouse->press_r == 1)
 			{
-				closeDelayCount++;
+				//closeDelayCount++;
+				auto_aim = 1;
 			}
 			else
 			{
 				closeDelayCount = 0;
+				auto_aim = 0;
 			}
 			if(closeDelayCount>50)   //
 			{
@@ -394,9 +399,9 @@ void MouseShootControl(Mouse *mouse,Key *key)
 //				SetFrictionWheelSpeed(1000); 
 //				frictionRamp.ResetCounter(&frictionRamp);
 //				SetShootState(NOSHOOTING);
-				LASER_OFF();//zy0802
-				g_friction_wheel_state = FRICTION_WHEEL_OFF;
-				friction_speed = 0;
+				//LASER_OFF();//zy0802
+				//g_friction_wheel_state = FRICTION_WHEEL_OFF;
+				//friction_speed = 0;
 				closeDelayCount = 0;
 			}			
 			else if(mouse->last_press_l == 0 && mouse->press_l== 1)  //检测鼠标左键单击动作
@@ -422,11 +427,13 @@ void MouseShootControl(Mouse *mouse,Key *key)
 						ShootOneBullet();
 					}
 				}
+				syncCnt = 0;
 			}
 			else if(mouse->last_press_l == 0 && mouse->press_l== 0)	//松开鼠标左键的状态
 			{
 				SetShootState(NOSHOOTING);	
-				RotateCNT = 0;			
+				RotateCNT = 0;
+				syncCnt++;
 			}			
 			else if(mouse->last_press_l == 1 && mouse->press_l== 1 && getLaunchMode() == SINGLE_MULTI)//单发模式下长按，便持续连发
 			{
@@ -436,7 +443,7 @@ void MouseShootControl(Mouse *mouse,Key *key)
 					ShootOneBullet();
 					RotateCNT = 0;
 				}
-				
+				syncCnt = 0;
 			}
 				
 		} break;				
@@ -454,6 +461,14 @@ extern float realBulletSpeed;
 extern uint16_t remainHeat;
 extern uint8_t burst;
 extern JudgeState_e JUDGE_State;
+extern float fakeHeat;
+extern uint16_t maxHeat;
+float tmpHeat;
+uint16_t allowBullet = 0;
+extern WorkState_e g_workState;
+extern float yawAngleTarget, pitchAngleTarget;
+extern float pitchRealAngle;
+extern float yawRealAngle;
 void ShootOneBullet()
 {
 	s_count_bullet ++;
@@ -461,14 +476,55 @@ void ShootOneBullet()
 	{
 	//ShootMotorPositionPID.ref = ShootMotorPositionPID.ref+OneShoot;
 	}	
-		if(JUDGE_State == ONLINE && remainHeat < (realBulletSpeed+5) && !burst)cdflag = 1;
-		else cdflag = 0;
-		if((plateRealAngle - plateAngleTarget <= 50) && burst)
-			if(((!cdflag) || JUDGE_State == OFFLINE))plateAngleTarget -= 360;
-		if((plateRealAngle - plateAngleTarget <= 1))
+	//if(JUDGE_State == ONLINE && remainHeat < (realBulletSpeed+5) && !burst)cdflag = 1;
+	tmpHeat = maxHeat - realBulletSpeed;
+	if(JUDGE_State == ONLINE && fakeHeat > (maxHeat - realBulletSpeed) && !burst)cdflag = 1;
+	else cdflag = 0;
+	if((plateRealAngle - plateAngleTarget <= 50) && burst)
+	{
+		if(((!cdflag) || JUDGE_State == OFFLINE))
 		{
-			if(((!cdflag) || JUDGE_State == OFFLINE))plateAngleTarget -= 60;
+			if(maxHeat>fakeHeat)allowBullet = (maxHeat-fakeHeat)/realBulletSpeed;
+			else allowBullet = 0;
+			if(allowBullet >= 6)allowBullet = 6;
+			for(int i=0;i<allowBullet;i++)
+			{
+				if(fakeHeat < (maxHeat - 1*realBulletSpeed))
+				{
+					plateAngleTarget -= 60;
+					fakeHeat += realBulletSpeed;
+				}
+				else 
+				{
+					if(plateRealAngle - plateAngleTarget <= 0)plateAngleTarget = plateRealAngle;
+				}
+			}
+			allowBullet = 0;
 		}
+	}
+	else if((plateRealAngle - plateAngleTarget <= 1))
+	{
+		if(((!cdflag) || JUDGE_State == OFFLINE) && fakeHeat < (maxHeat - realBulletSpeed))
+		{
+			if(fakeHeat < (maxHeat - 1*realBulletSpeed))
+			{
+//				if(g_workState == RUNE_STATE)
+//				{
+//					if(fabs(pitchRealAngle - pitchAngleTarget) <= 1.5 && fabs(yawRealAngle - yawAngleTarget) <= 1.5)
+//					{
+//						plateAngleTarget -= 60;
+//						//fakeHeat += realBulletSpeed;
+//					}
+//				}
+//				else
+				{
+					plateAngleTarget -= 60;
+					fakeHeat += realBulletSpeed;
+				}
+			}
+			else if(plateRealAngle - plateAngleTarget <= 0)plateAngleTarget = plateRealAngle;
+		}
+	}
 }
 
 Shoot_State_e GetShootState()

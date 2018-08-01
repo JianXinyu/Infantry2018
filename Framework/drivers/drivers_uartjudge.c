@@ -16,7 +16,6 @@
 #include "usart.h"
 #include "stm32f4xx_hal_uart.h"
 #include "peripheral_define.h"
-#include <string.h> //memcpy 头文件
 
 const unsigned char myCRC8_INIT = 0xff;
 const unsigned char myCRC8_TAB[256] =
@@ -95,17 +94,6 @@ unsigned int myVerify_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwL
     return ( ucExpected == pchMessage[dwLength-1] );
 }
 
-
-void append_crc8_check_sum(unsigned char *pchMessage,unsigned int dwLength)
-{
-unsigned char ucCRC = 0;
-	if((pchMessage ==0)||(dwLength<=2))return;
-	ucCRC = myGet_CRC8_Check_Sum((unsigned char *)pchMessage,dwLength-1,myCRC8_INIT);
-  pchMessage[dwLength-1]=ucCRC;
-
-}
-
-
 uint16_t myGet_CRC16_Check_Sum(uint8_t *pchMessage,uint32_t dwLength,uint16_t wCRC)
 {
     uint8_t chData;
@@ -132,22 +120,6 @@ uint32_t myVerify_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) ==
     pchMessage[dwLength - 1]);
 }
-
-
-
-void append_crc16_check_sum(uint8_t *pchMessage,uint32_t dwLength)
-{
-uint16_t wCRC = 0;
-	if((pchMessage ==NULL)||(dwLength<=2))
-	{
-	return;
-	}
-	wCRC = myGet_CRC16_Check_Sum(pchMessage,dwLength-2,myCRC16_INIT);
-  pchMessage[dwLength-2]=(wCRC & 0x00ff);
-  pchMessage[dwLength-1]=((wCRC>>8) & 0x00ff);
-	//以上三句有个U8的注释没弄懂
-}
-
 
 uint8_t tmp_judge;
 void InitJudgeUart(void){
@@ -276,8 +248,7 @@ void judgeUartRxCpltCallback(void)
 		if(HAL_UART_Receive_DMA(&JUDGE_UART, &tmp_judge, 1) != HAL_OK)
 		{
 			Error_Handler();
-	  }	
-	
+	  }
 }
 
 uint8_t JUDGE_Received = 0;
@@ -286,8 +257,6 @@ JudgeState_e JUDGE_State = OFFLINE;
 extGameRobotState_t RobotState;
 extPowerHeatData_t PowerHeatData;
 extShootData_t ShootData;
-extShowData_t ShowData;
-
 float realPower;
 float realPowerBuffer;
 float realHeat;
@@ -295,9 +264,13 @@ float realBulletSpeed = 22;
 uint8_t realLevel;
 uint16_t maxHP = 1500;
 uint16_t remainHP;
-uint16_t maxHeat = 120;
-uint16_t remainHeat = 666;
+uint16_t maxHeat = 480;
+uint16_t remainHeat = 480;
+float cooldown = 72;
+float fakeHeat = 0;
 extern float realBulletSpeed;
+extern uint16_t syncCnt;
+uint8_t shootCnt = 0;
 void Judge_Refresh_Power()
 {
 	//printf("verify OK\r\n");
@@ -330,6 +303,7 @@ void Judge_Refresh_Power()
 	realHeat = PowerHeatData.shooterHeat0;
 	remainHeat = maxHeat - realHeat;
 	JUDGE_Received = 1;
+	//if(syncCnt > 17){fakeHeat= realHeat;}
 }
 
 void Judge_Refresh_State()
@@ -353,10 +327,10 @@ void Judge_Refresh_State()
 	remainHP = RobotState.remainHP;
 	switch(maxHP)
 	{
-		case 1000:maxHeat = 120;break;
-		case 1250:maxHeat = 240;break;
-		case 1500:maxHeat = 480;break;
-		default:maxHeat = 120;break;
+		case 1000:{maxHeat = 120;cooldown = 18;}break;
+		case 1250:{maxHeat = 240;cooldown = 36;}break;
+		case 1500:{maxHeat = 480;cooldown = 72;}break;
+		default:{maxHeat = 480;cooldown = 72;}break;
 	}
 	JUDGE_Received = 1;
 }
@@ -368,7 +342,9 @@ void Judge_Refresh_Shoot()
 	for(int i = 0; i<4; i++){
 		bsd[i] = (unsigned char)cs[i];
 	}
-	realBulletSpeed = ShootData.bulletSpeed + 1;
+	realBulletSpeed = ShootData.bulletSpeed;
+	//fakeHeat += realBulletSpeed;
+	shootCnt++;
 	JUDGE_Received = 1;
 }
 
@@ -395,26 +371,4 @@ void Judge_Refresh_Result()
 void Judge_Refresh_Buff()
 {
 	JUDGE_Received = 1;
-}
-
-
-
-void data_pack_send(uint16_t cmd_id, uint8_t *p_data, uint16_t len)
-{
-	unsigned char *tx_buf;
-	//tx_buf=malloc(30);
-	memset(tx_buf,0,30);//memset(tx_buf, 0, COMPUTER_FRAME_BUFLEN); ??????30
-	frame_header_t *p_header = (frame_header_t*)tx_buf;
-  
-  p_header->sof          = 0xA5; // UP_REG_ID;
-  p_header->data_length  = len;
-  
-	//cmd_id = 0x005;
-  memcpy(&tx_buf[5], (uint8_t*)&cmd_id, 2);// memcpy(&computer_tx_buf[HEADER_LEN], (uint8_t*)&cmd_id, CMD_LEN);
-  append_crc8_check_sum(tx_buf, 5);// HEADER_LEN
-  //*p_data = 20 ;
-  memcpy(&tx_buf[5 + 2], p_data, len);// HEADER_LEN + CMD_LEN
-  append_crc16_check_sum(tx_buf, 5 + 2 + len + 1);// HEADER_LEN + CMD_LEN + len + CRC_LEN
-	//HAL_UART_Transmit_DMA(&JUDGE_UART,tx_buf,11);
-	//HAL_UART_Transmit(&JUDGE_UART,(uint8_t *)&tx_buf, 30, 0xFFFF);
 }

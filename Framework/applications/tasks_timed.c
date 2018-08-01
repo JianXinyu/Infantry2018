@@ -133,7 +133,7 @@ void Timer_2ms_lTask(void const * argument)
 	  WorkStateSwitchProcess();//状态机动作
 
 		//陀螺仪复位计时
-    if(s_time_tick_2ms == 2000)
+    if(s_time_tick_2ms == 1000)
 		{
 			//GYRO_RST();//给单轴陀螺仪将当前位置写零，注意需要一定的稳定时间
 			zeroGyro = gyroZAngle;
@@ -145,11 +145,11 @@ void Timer_2ms_lTask(void const * argument)
 		{
 			if(bShoot==1)
 			{
-				if(zyShootTimeCount<1)
+				if(zyShootTimeCount<1000)
 				{
 					zyShootTimeCount++;
 				}
-				else if(zyShootTimeCount==1)
+				if(zyShootTimeCount==175)
 				{
 					bShoot=0;
 					ShootOneBullet();//拨盘啵一个
@@ -164,10 +164,12 @@ void Timer_2ms_lTask(void const * argument)
 		{
 			checkRecTime++;
 		}
+		else checkRecTime = 0;
 		if(checkKeyTime<65534)
 		{
 			checkKeyTime++;
 		}
+		else checkKeyTime = 0;
 		RuneShootControl();
 		
 		
@@ -268,41 +270,43 @@ void WorkStateFSM(void)
 				if(checkKeyTime>450)
 				{
 					checkKeyTime=0;
-					zyRuneMode=0;
+					zyRuneMode=11;
 					LASER_ON();
 					g_workState=RUNE_STATE;
 					g_friction_wheel_state = FRICTION_WHEEL_ON;
-					friction_speed = now_friction_speed;
+					friction_speed = 7000;
+//					yawAngleTarget = 0;
+//					pitchAngleTarget = 0;
 					//HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
 				}
 				
 			}
-			/*else if(GetInputMode() == KEY_MOUSE_INPUT
+			else if(GetInputMode() == KEY_MOUSE_INPUT
 								&& (g_switch1.switch_value1 == REMOTE_SWITCH_CHANGE_3TO1 
 										|| g_switch1.switch_value1 == REMOTE_SWITCH_CHANGE_3TO2
-							||RC_CtrlData.key.v == 32768//B
-							||RC_CtrlData.key.v == 1024//G
+							//||RC_CtrlData.key.v == 32768//B
+							//||RC_CtrlData.key.v == 1024//G
 							||RC_CtrlData.key.v == 16384)//V
 							&& g_switchRead == 1)
 			{
 				g_workState = RUNE_STATE;
 				g_switchRead = 0;
 				LASER_ON();
-				zyRuneMode=0;
-				if(g_switch1.switch_value1 == REMOTE_SWITCH_CHANGE_3TO1
-					||RC_CtrlData.key.v == 1024)//小符
-				{
-					LASER_OFF();
-					zyRuneMode=2;
-					HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
-				}else if(g_switch1.switch_value1 == REMOTE_SWITCH_CHANGE_3TO2
-					||RC_CtrlData.key.v == 32768)//大符
-				{
-					LASER_OFF();
-					zyRuneMode=3;
-					HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
-				}
-			}*/
+				zyRuneMode=11;
+//				if(g_switch1.switch_value1 == REMOTE_SWITCH_CHANGE_3TO1
+//					||RC_CtrlData.key.v == 1024)//小符
+//				{
+//					LASER_OFF();
+//					zyRuneMode=2;
+//					HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
+//				}else if(g_switch1.switch_value1 == REMOTE_SWITCH_CHANGE_3TO2
+//					||RC_CtrlData.key.v == 32768)//大符
+//				{
+//					LASER_OFF();
+//					zyRuneMode=3;
+//					HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
+//				}
+			}
 			//ZY
 		}break;
 		case STOP_STATE:   
@@ -327,43 +331,46 @@ void WorkStateFSM(void)
 				g_workState = NORMAL_STATE;
 				g_switchRead = 0;
 				zyRuneMode=0;
+//				yawAngleTarget = 0;
+//				pitchAngleTarget = 0;
+				HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&waitRuneMSG, 4, 0xFFFF);
 			}
-//			else if(GetInputMode() == KEY_MOUSE_INPUT
-//								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==0)
-//			{
-//				g_switchRead = 0;
-//				if(checkKeyTime>450)
-//				{
-//					checkKeyTime=0;
-//					pRunePosition[0].pitch_position=pitchAngleTarget;
-//					pRunePosition[0].yaw_position=yawAngleTarget;
-//					zyRuneMode++;
-//				}
-//			}
-//			else if(GetInputMode() == KEY_MOUSE_INPUT
-//								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==1)
-//			{
-//				g_switchRead = 0;
-//				if(checkKeyTime>450)
-//				{
-//					checkKeyTime=0;
-//					pRunePosition[1].pitch_position=pitchAngleTarget;
-//					pRunePosition[1].yaw_position=yawAngleTarget;
-//					zyRuneMode++;
-//				}
-//			}else if(GetInputMode() == KEY_MOUSE_INPUT
-//								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==2)
-//			{
-//				g_switchRead = 0;
-//				if(checkKeyTime>450)
-//				{
-//					checkKeyTime=0;
-//					pRunePosition[2].pitch_position=pitchAngleTarget;
-//					pRunePosition[2].yaw_position=yawAngleTarget;
-//					zyLocationInit(pRunePosition);
-//					zyRuneMode=4;
-//				}
-//			}
+			else if(GetInputMode() == KEY_MOUSE_INPUT
+								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==11)
+			{
+				g_switchRead = 0;
+				if(checkKeyTime>450)
+				{
+					checkKeyTime=0;
+					pRunePosition[0].pitch_position=pitchAngleTarget;
+					pRunePosition[0].yaw_position=yawAngleTarget;
+					zyRuneMode++;
+				}
+			}
+			else if(GetInputMode() == KEY_MOUSE_INPUT
+								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==12)
+			{
+				g_switchRead = 0;
+				if(checkKeyTime>450)
+				{
+					checkKeyTime=0;
+					pRunePosition[1].pitch_position=pitchAngleTarget;
+					pRunePosition[1].yaw_position=yawAngleTarget;
+					zyRuneMode++;
+				}
+			}else if(GetInputMode() == KEY_MOUSE_INPUT
+								&& (RC_CtrlData.key.v == 16384)&& g_switchRead == 1&&zyRuneMode==13)
+			{
+				g_switchRead = 0;
+				if(checkKeyTime>450)
+				{
+					checkKeyTime=0;
+					pRunePosition[2].pitch_position=pitchAngleTarget;
+					pRunePosition[2].yaw_position=yawAngleTarget;
+					zyLocationInit(pRunePosition);
+					zyRuneMode=14;
+				}
+			}
 		}break;
 		default:
 		{
@@ -385,6 +392,8 @@ void WorkStateSwitchProcess(void)
 		SetFrictionWheelSpeed(1000);
 		SetFrictionState(FRICTION_WHEEL_OFF);
 		frictionRamp.ResetCounter(&frictionRamp);
+		g_friction_wheel_state = FRICTION_WHEEL_ON;
+		friction_speed = 0;
 	}
 	//如果从其他模式切换到prapare模式，要将一系列参数初始化
 	if((lastWorkState != g_workState) && (g_workState == PREPARE_STATE))  
@@ -406,8 +415,8 @@ void WorkStateSwitchProcess(void)
 //		
 		//LASER_OFF();//zy0726
 		*/
-		yawAngleTarget = 0;
-		pitchAngleTarget = pitchRealAngle;
+//		yawAngleTarget = 0;
+//		pitchAngleTarget = 0;
 		*(IOPool_pGetWriteData(ctrlUartIOPool) -> ch) = 4;
 		IOPool_getNextWrite(ctrlUartIOPool);
 	}
@@ -420,14 +429,16 @@ void WorkStateSwitchProcess(void)
 		SetFrictionState(FRICTION_WHEEL_OFF);
 		frictionRamp.ResetCounter(&frictionRamp);
 		
-		if(HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&waitRuneMSG, 4, 0xFFFF) != HAL_OK)
-		{
-			fw_Warning();
-		};
+//		if(HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&waitRuneMSG, 4, 0xFFFF) != HAL_OK)
+//		{
+//			fw_Warning();
+//		};
 	}
 	if((g_workState == NORMAL_STATE) && (lastWorkState == RUNE_STATE))  
 	{
-		yawAngleTarget = -ZGyroModuleAngle;
+		//yawAngleTarget = -ZGyroModuleAngle;
+//		yawAngleTarget = 0;
+//		pitchAngleTarget = 0;
 	}
 
 
@@ -469,10 +480,20 @@ void RuneShootControl(void)
 
 extern uint8_t autoReceived;
 extern uint8_t autoGet;
+extern float fakeHeat;
+extern float cooldown;
+extern uint16_t syncCnt;
+extern float realHeat;
+extern uint8_t shootCnt;
+extern uint8_t startingRUN;
+extern uint8_t limitBreak;
 void getJudgeState(void)
 {
 	static int s_count_judge = 0;
 	static int k_count_auto = 0;
+	static int h_count_cooldown = 0;
+	static int h_count_sync = 0;
+	static int p_count_lb = 0;
 	if(JUDGE_Received==1)
 	{
 		s_count_judge = 0;
@@ -491,7 +512,7 @@ void getJudgeState(void)
 	{
 		k_count_auto = 0;
 		autoGet = 1;
-		JUDGE_Received = 0;
+		autoReceived = 0;
 	}
 	else
 	{
@@ -500,6 +521,27 @@ void getJudgeState(void)
 		{//300ms
 			autoGet = 0;
 		}
+	}
+	if(h_count_cooldown > 3)
+	{
+		h_count_cooldown = 0;
+		if(syncCnt > 35 && JUDGE_State == ONLINE){fakeHeat = realHeat;}
+		else if(fakeHeat >= cooldown/100)fakeHeat -= cooldown/100;
+		else fakeHeat = 0;
+	}
+	else h_count_cooldown++;
+	if(h_count_sync > 500)
+	{
+		h_count_sync = 0;
+//		if(shootCnt < 5)fakeHeat = realHeat;
+		shootCnt = 0;
+	}
+	else h_count_sync++;
+	if(startingRUN)p_count_lb++;
+	if(p_count_lb > 400 && !startingRUN)
+	{
+		limitBreak = 0;
+		startingRUN = 0;
 	}
 }
 

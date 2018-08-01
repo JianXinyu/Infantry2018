@@ -49,7 +49,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 		//能量槽*****重要，超功率掉血	
 	else if(UartHandle == &JUDGE_UART){
 
-		if(g_workState != RUNE_STATE)judgeUartRxCpltCallback();
+		//if(g_workState != RUNE_STATE)
+			judgeUartRxCpltCallback();
 	}
 		//陀螺仪读取
 	else if(UartHandle == &GYRO_UART){

@@ -104,10 +104,10 @@ void manifoldUartRxCpltCallback()
 	HAL_UART_AbortReceive((&MANIFOLD_UART));
 	if(HAL_UART_Receive_DMA(&MANIFOLD_UART, &runeLocation, 1) != HAL_OK)
 	{
-		huart3.RxState = HAL_UART_STATE_READY;
-    __HAL_UNLOCK(&huart3);
-//		Error_Handler();
-//		printf( "ManifoldUart error" );
+//		huart3.RxState = HAL_UART_STATE_READY;
+//    __HAL_UNLOCK(&huart3);
+		Error_Handler();
+		printf( "ManifoldUart error" );
 	} 
 	if( xHigherPriorityTaskWoken == pdTRUE )
 	{
@@ -308,7 +308,7 @@ void vRefreshLocation(float yaw_center, float pitch_center){
 #define zyDetaP 1.4f
 #define zyDetaY 0.0f
 #endif
-#ifdef LITTLE_SON
+#ifdef INFANTRY_2
 #define pAddZy 6.64f
 #define pMinusZy 5.9f
 #define yAddZy 9.2f

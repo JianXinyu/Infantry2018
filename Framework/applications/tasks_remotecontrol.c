@@ -33,7 +33,7 @@
 #include "tasks_platemotor.h"
 #include "drivers_uartupper_user.h"
 #include "drivers_servo.h"
-
+#include "drivers_cmpower.h"
 #include "peripheral_laser.h"
 extern uint8_t zyRuneMode;//ZY激光瞄准镜
 uint8_t going = 0;
@@ -68,6 +68,7 @@ extern xSemaphoreHandle xSemaphore_rcuart;
 extern float yawAngleTarget, pitchAngleTarget;
 extern uint8_t g_isGYRO_Rested ;
 extern int twist_state ;
+extern float CM_current_LIMIT;
 
 extern WorkState_e g_workState;//张雁大符
 
@@ -217,7 +218,7 @@ void RemoteDataProcess(uint8_t *pData)
 	}
 }
 extern float yawMotorAngle;
-
+extern float fakeHeat;
 void RemoteControlProcess(Remote *rc)
 {
 	static float AngleTarget_temp = 0;
@@ -226,6 +227,10 @@ void RemoteControlProcess(Remote *rc)
 		SetShootMode(MANUL);
 		ChassisSpeedRef.forward_back_ref = (RC_CtrlData.rc.ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT;
 		ChassisSpeedRef.left_right_ref   = (rc->ch0 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_CHASSIS_SPEED_REF_FACT; 
+		
+		if(abs(RC_CtrlData.rc.ch1 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET)<(0x694-(int16_t)REMOTE_CONTROLLER_STICK_OFFSET)/1.5 && abs(rc->ch0 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) < (0x694-(int16_t)REMOTE_CONTROLLER_STICK_OFFSET)/2)
+			CM_current_LIMIT = CM_current_MAX_LOW;
+		else CM_current_LIMIT = CM_current_MAX;
 		
  		pitchAngleTarget += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
 		
@@ -261,6 +266,7 @@ void RemoteControlProcess(Remote *rc)
 			HAL_UART_Transmit(&SERVO_UART,(uint8_t *)&ServoMes, 15, 0xFFFF);
 		}
 	}
+	fakeHeat = 0;
 	RemoteShootControl(&g_switch1, rc->s1);
 }
 
@@ -280,10 +286,12 @@ extern uint8_t waitRuneMSG[4];
 extern uint8_t littleRuneMSG[4];
 extern uint8_t bigRuneMSG[4];
 uint16_t fbss;
-float auto_kpx = 0.006f;
-float auto_kpy = 0.006f;
-float rune_kpx = 0.005f;
-float rune_kpy = 0.005f;
+float auto_kpx = 0.012f;
+float auto_kpy = 0.003f;
+float auto_kdx = 0.025f;
+float auto_kdy = 0.012f;
+float rune_kpx = 0.007f;
+float rune_kpy = 0.007f;
 extern uint8_t auto_getting;
 extern uint16_t autoBuffer[10];
 uint16_t tmpx,tmpy;
@@ -295,8 +303,18 @@ extern float realBulletSpeed;
 extern uint8_t zyRuneMode;
 extern Location_Number_s pRunePosition[3];
 extern Location_Number_s Location_Number[];
+float p1d=0,p2d=0,p3d=0,y1d=0,y2d=0,y3d=0;
+int nowErrx=0,nowErry=0,lastErrx=0,lastErry=0;
+float adjustAutox=0,adjustAutoy=0;
+extern uint8_t auto_aim;
+int16_t forwardRamp=0;
+int16_t leftRamp = 0;
+extern float gyroXacc;
+int16_t pitchIntensityAdd = 0;
 void MouseKeyControlProcess(Mouse *mouse, Key *key)
 {
+	static float AngleTarget_temp = 0;
+	
 	//++delayCnt;
 	if(dircnt > 8000)dircnt = 0;
 	dircnt++;
@@ -313,18 +331,42 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 	
 		tmpx = (0x0000 | autoBuffer[2] | autoBuffer[1]<<8);
 		tmpy = (0x0000 | autoBuffer[5] | autoBuffer[4]<<8);
-		
-		if((autoBuffer[3] == 0xA6 || autoBuffer[3] == 0xA8) && (key->v&256))
+		nowErrx = tmpx - auto_x_default;
+		nowErry = tmpy - auto_y_default;
+		if((autoBuffer[3] == 0xA6 || autoBuffer[3] == 0xA8) && (auto_aim))
 		{
-			pitchAngleTarget -= (tmpy - auto_y_default) * auto_kpy;
-			yawAngleTarget -= (tmpx - auto_x_default) * auto_kpx;
+			adjustAutoy += mouse->y * 0.005;  
+			adjustAutox += mouse->x * 0.005;
+			pitchAngleTarget -= (tmpy - auto_y_default) * auto_kpy + (nowErry - lastErry) * auto_kdy + adjustAutoy;
+			yawAngleTarget -= (tmpx - auto_x_default) * auto_kpx + (nowErrx - lastErrx) * auto_kdx + adjustAutox;
+			lastErrx = nowErrx;
+			lastErry = nowErry;
 		}
 		else
 		{
-			pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  
-			yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
+			pitchAngleTarget -= mouse->y * MOUSE_TO_PITCH_ANGLE_INC_FACT;  
+			//yawAngleTarget    -= mouse->x * MOUSE_TO_YAW_ANGLE_INC_FACT;
+		if(fabs(yawMotorAngle) <= 90)
+		{
+				yawAngleTarget   -= mouse->x * MOUSE_TO_YAW_ANGLE_INC_FACT;
+		}
+			
+		AngleTarget_temp = yawAngleTarget;
+			
+		if(fabs(yawMotorAngle) > 90 )
+		{
+				AngleTarget_temp   -= mouse->x * MOUSE_TO_YAW_ANGLE_INC_FACT;
+				if(fabs(AngleTarget_temp)<fabs(yawAngleTarget))
+					yawAngleTarget = AngleTarget_temp;
 		}
 
+			lastErrx = 0;
+			lastErry = 0;
+//			adjustAutoy = 0;
+//			adjustAutox = 0;
+		}
+		
+		
 		//speed mode: normal speed/high speed 
 		forward_back_speed =  NORMAL_FORWARD_BACK_SPEED;
 		left_right_speed = NORMAL_LEFT_RIGHT_SPEED;
@@ -334,6 +376,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 			going = 1;
 			forward_back_speed =  LOW_FORWARD_BACK_SPEED;
 			left_right_speed = LOW_LEFT_RIGHT_SPEED;
+			CM_current_LIMIT = CM_current_MAX_LOW*10;
 			int id = 0, pwm = 2400, time = 0;
 			char ServoMes[15];
 			sprintf(ServoMes, "#%03dP%04dT%04d!", id, pwm, time);
@@ -342,6 +385,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		else 
 		{
 			going = 0;
+			CM_current_LIMIT = CM_current_MAX;
 			int id = 0, pwm = 500, time = 0;
 			char ServoMes[15];
 			sprintf(ServoMes, "#%03dP%04dT%04d!", id, pwm, time);
@@ -363,28 +407,44 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		//movement process
 		if(key->v & 0x01)  // key: w
 		{
-			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			//ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			if(forwardRamp < 0)forwardRamp = 0;
+			forwardRamp += 0.02*(forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp) - forwardRamp);
+			ChassisSpeedRef.forward_back_ref = forwardRamp;
 			twist_state = 0;
 		}
 		else if(key->v & 0x02) //key: s
 		{
-			ChassisSpeedRef.forward_back_ref = -forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			//ChassisSpeedRef.forward_back_ref = -forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			if(forwardRamp > 0)forwardRamp = 0;
+			forwardRamp += 0.02*(-forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp) - forwardRamp);
+			ChassisSpeedRef.forward_back_ref = forwardRamp;
 			twist_state = 0;
 		}
 		else
 		{
+			forwardRamp = 0;
 			ChassisSpeedRef.forward_back_ref = 0;
 			FBSpeedRamp.ResetCounter(&FBSpeedRamp);
+			pitchIntensityAdd = 0;
 		}
 		if(key->v & 0x04)  // key: d
 		{
-			ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			//ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			if(leftRamp > 0)leftRamp = 0;
+			leftRamp += 0.02*(-left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp) - leftRamp);
+			ChassisSpeedRef.left_right_ref = leftRamp;
 			twist_state = 0;
+			pitchIntensityAdd = 0;
 		}
 		else if(key->v & 0x08) //key: a
 		{
-			ChassisSpeedRef.left_right_ref = left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			//ChassisSpeedRef.left_right_ref = left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			if(leftRamp < 0)leftRamp = 0;
+			leftRamp += 0.02*(left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp) - leftRamp);
+			ChassisSpeedRef.left_right_ref = leftRamp;
 			twist_state = 0;
+			pitchIntensityAdd = 0;
 		}
 		else
 		{
@@ -393,9 +453,9 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		}
 		if(key->v & 0x80)	//key:e the chassis turn right 45 degree
 		{
-			if(shootdir < 45 && dircnt >= 30)
+				if(shootdir > -45 && dircnt >= 30)
 			{
-				shootdir += 45;
+				shootdir -= 45;
 				dircnt = 0;
 			}
 //			setLaunchMode(SINGLE_MULTI);
@@ -407,35 +467,58 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		}
 		if(key->v & 0x40)	//key:q the chassis turn left 45 degree
 		{
-			if(shootdir > -45 && dircnt >= 30)
+			if(shootdir < 45 && dircnt >= 30)
 			{
-				shootdir -= 45;
+				shootdir += 45;
 				dircnt = 0;
 			}
 //			setLaunchMode(CONSTENT_4);
 		}
+		if(key->v & 0x200) //key:f
+		{
+			shootdir = 0;
+			adjustAutoy = 0;
+			adjustAutox = 0;
+		}
 		
 		if(key->v == 2048)//z
 		{
-			now_friction_speed = 1250;
+			//5000
+			now_friction_speed = 5500;
 			friction_speed = 5500;
 			LASER_ON(); 
-			realBulletSpeed = 15.0f;
+			g_friction_wheel_state = FRICTION_WHEEL_ON;	
+			realBulletSpeed = 14.0f;
 		}
 		if(key->v == 4096)//x
 		{
-			now_friction_speed = 1500;
-			friction_speed = 6500;
+			now_friction_speed = 6000;
+			friction_speed = 6000;
 			LASER_ON(); 
-			realBulletSpeed = 23.0f;//6750-24.5 7000-25.5 
+			g_friction_wheel_state = FRICTION_WHEEL_ON;	
+			realBulletSpeed = 20.0f;//6750-24.5 7000-25.5 
 		}
 		if(key->v == 8192)//c
 		{
-			now_friction_speed = 7500;
-			friction_speed = 7500;
+			now_friction_speed = 7000;
+			friction_speed = 7000;
 			LASER_ON();
-			realBulletSpeed = 28.0f;
+			g_friction_wheel_state = FRICTION_WHEEL_ON;	
+			realBulletSpeed = 25.5f;
 		}
+		if(key->v == 8224)//ctrl+c
+		{
+//			fakeHeat = 0;
+		}
+		if(key->v == 560)//CTRL+SHIFT+F
+		{
+			now_friction_speed = 6500;
+			friction_speed = 0;
+			//LASER_ON();
+			realBulletSpeed = 23.0f;
+			g_friction_wheel_state = FRICTION_WHEEL_OFF;
+		}
+		
 		
 		/*裁判系统离线时的功率限制方式*/
 		if(JUDGE_State == OFFLINE)
@@ -499,7 +582,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 //			sprintf(ServoMes, "#%03dP%04dT%04d!", id, pwm, time);
 //			HAL_UART_Transmit(&SERVO_UART,(uint8_t *)&ServoMes, 15, 0xFFFF);
 		}
-		if(key->v == 1024)//��key: G
+		if(key->v == 1056)//��key: G+Ctrl
 		{
 			twist_state = 1;
 		}
@@ -511,23 +594,27 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		MouseShootControl(mouse,key);
 		if(RC_CtrlData.key.v == 1024)// G
 		{
-			//LASER_OFF();
-			zyRuneMode=0;
+			LASER_ON();
+			zyRuneMode=8;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
 			g_friction_wheel_state = FRICTION_WHEEL_ON;
-			friction_speed = now_friction_speed;
+			friction_speed = 7000;
 			g_workState=RUNE_STATE;
+//			pitchAngleTarget = 0;
+//			yawAngleTarget = 0;
 //			yawAngleTarget = Location_Number[4].yaw_position;
 //			pitchAngleTarget = Location_Number[4].pitch_position;
 //			ShootOneBullet();
 		}else if(RC_CtrlData.key.v == 32768)// B
 		{
-			//LASER_OFF();
+			LASER_ON();
 			zyRuneMode=5;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
 			g_friction_wheel_state = FRICTION_WHEEL_ON;
-			friction_speed = now_friction_speed;
+			friction_speed = 7000;
 			g_workState=RUNE_STATE;
+//			pitchAngleTarget = 0;
+//			yawAngleTarget = 0;
 //			yawAngleTarget = Location_Number[4].yaw_position;
 //			pitchAngleTarget = Location_Number[4].pitch_position;
 //			ShootOneBullet();
@@ -576,25 +663,32 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 //			zyRuneMode++;
 //			autoBuffer[3] = 0x00;
 //		}
-
+		#ifdef INFANTRY_2
+		p1d = 5.0f;
+		y1d = 1.0f;
+		p2d = 6.0f;
+		y2d = 0;
+		p3d = 4.0f;
+		y3d = 0;
+		#endif
 		if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB2) && (zyRuneMode == 1 || zyRuneMode == 5))
 		{
-			pRunePosition[0].pitch_position = pitchAngleTarget;
-			pRunePosition[0].yaw_position = yawAngleTarget;
+			pRunePosition[0].pitch_position = pitchAngleTarget + p1d;
+			pRunePosition[0].yaw_position = yawAngleTarget + y1d;
 			autoBuffer[3] = 0x00;
 			zyRuneMode++;
 		}
 		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB3) && (zyRuneMode == 2 || zyRuneMode == 6))
 		{
-			pRunePosition[1].pitch_position = pitchAngleTarget;
-			pRunePosition[1].yaw_position = yawAngleTarget;
+			pRunePosition[1].pitch_position = pitchAngleTarget + p2d;
+			pRunePosition[1].yaw_position = yawAngleTarget + y2d;
 			autoBuffer[3] = 0x00;
 			zyRuneMode++;
 		}
 		else if(GetWorkState() == RUNE_STATE && (autoBuffer[3] == 0xB4) && (zyRuneMode == 3 || zyRuneMode == 7))
 		{
-			pRunePosition[2].pitch_position = pitchAngleTarget;
-			pRunePosition[2].yaw_position = yawAngleTarget;
+			pRunePosition[2].pitch_position = pitchAngleTarget + p3d;
+			pRunePosition[2].yaw_position = yawAngleTarget + y3d;
 			autoBuffer[3] = 0x00;
 			zyLocationInit(pRunePosition);
 			zyRuneMode++;		
@@ -656,10 +750,10 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 		if(RC_CtrlData.key.v == 1024)//小符 G
 		{
 			//LASER_OFF();
-			zyRuneMode=1;
+			zyRuneMode=4;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&littleRuneMSG, 4, 0xFFFF);
 			g_friction_wheel_state = FRICTION_WHEEL_ON;
-			friction_speed = now_friction_speed;
+			friction_speed = 7000;
 //			yawAngleTarget = Location_Number[4].yaw_position;
 //			pitchAngleTarget = Location_Number[4].pitch_position;
 //			ShootOneBullet();
@@ -670,7 +764,7 @@ void MouseKeyControlProcess(Mouse *mouse, Key *key)
 			zyRuneMode=5;
 			HAL_UART_Transmit(&MANIFOLD_UART , (uint8_t *)&bigRuneMSG, 4, 0xFFFF);
 			g_friction_wheel_state = FRICTION_WHEEL_ON;
-			friction_speed = now_friction_speed;
+			friction_speed = 7000;
 //			yawAngleTarget = Location_Number[4].yaw_position;
 //			pitchAngleTarget = Location_Number[4].pitch_position;
 //			ShootOneBullet();
