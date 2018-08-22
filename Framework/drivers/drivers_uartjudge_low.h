@@ -80,6 +80,7 @@ typedef enum
 }JudgeState_e;
 
 void judgeUartRxCpltCallback(void);
+void Send_User_Data(void);
 void InitJudgeUart(void);
 void Judge_Refresh_Power();
 void Judge_Refresh_State();

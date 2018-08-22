@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=D:/RoboMaster/infantry_can/T_Infantry_sunking_roll/Inc
+HeaderPath=A:/Project/Robomaster/1.Code/Infantry/Inc
 HeaderFiles=gpio.h;can.h;dma.h;FreeRTOSConfig.h;spi.h;tim.h;usart.h;usb_device.h;usbd_conf.h;usbd_desc.h;usbd_cdc_if.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;iwdg.h;adc.h;
-SourcePath=D:/RoboMaster/infantry_can/T_Infantry_sunking_roll/Src
+SourcePath=A:/Project/Robomaster/1.Code/Infantry/Src
 SourceFiles=gpio.h;can.h;dma.h;FreeRTOSConfig.h;spi.h;tim.h;usart.h;usb_device.h;usbd_conf.h;usbd_desc.h;usbd_cdc_if.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;gpio.c;can.c;dma.c;freertos.c;spi.c;tim.c;usart.c;usb_device.c;usbd_conf.c;usbd_desc.c;usbd_cdc_if.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;main.c;iwdg.h;iwdg.c;adc.c;
 
 [PreviousLibFiles]

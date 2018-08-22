@@ -32,7 +32,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 	if(UartHandle == &RC_UART){
 
 		rcUartRxCpltCallback();
-		
+		//Send_User_Data();//uploading custom data to the judge system
 	}
 	
 		//妙算通信串口
@@ -51,9 +51,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 
 		//if(g_workState != RUNE_STATE)
 			judgeUartRxCpltCallback();
+			
 	}
 		//陀螺仪读取
 	else if(UartHandle == &GYRO_UART){
 		gyroUartRxCpltCallback();
 	}
 }   
+

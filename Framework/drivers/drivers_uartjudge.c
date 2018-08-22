@@ -38,6 +38,43 @@ const unsigned char myCRC8_TAB[256] =
     0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7, 0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
 };
 
+
+unsigned char myGet_CRC8_Check_Sum(unsigned char *pchMessage,unsigned int dwLength,unsigned char ucCRC8)
+{
+    unsigned char ucIndex;
+    while (dwLength--)
+    {
+        ucIndex = ucCRC8^(*pchMessage++);
+        ucCRC8 = myCRC8_TAB[ucIndex];
+    }
+    return(ucCRC8);
+}
+/*
+** Descriptions: CRC8 Verify function
+** Input: Data to Verify,Stream length = Data + checksum
+** Output: True or False (CRC Verify Result)
+*/
+unsigned int myVerify_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength)
+{
+    unsigned char ucExpected = 0;
+    if ((pchMessage == 0) || (dwLength <= 2)) return 0;
+    ucExpected = myGet_CRC8_Check_Sum (pchMessage, dwLength-1, myCRC8_INIT);
+    return ( ucExpected == pchMessage[dwLength-1] );
+}
+/*
+** Descriptions: append CRC8 to the end of data
+** Input: Data to CRC and append,Stream length = Data + checksum
+** Output: True or False (CRC Verify Result)
+*/
+void Append_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength)
+{
+unsigned char ucCRC = 0;
+if ((pchMessage == 0) || (dwLength <= 2)) return;
+ucCRC = myGet_CRC8_Check_Sum ( (unsigned char *)pchMessage, dwLength-1, myCRC8_INIT);
+pchMessage[dwLength-1] = ucCRC;
+}
+
+
 const uint16_t myCRC16_INIT = 0xffff;
 const uint16_t mywCRC_Table[256] =
 {
@@ -74,26 +111,11 @@ const uint16_t mywCRC_Table[256] =
     0xf78f, 0xe606, 0xd49d, 0xc514, 0xb1ab, 0xa022, 0x92b9, 0x8330,
     0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
 };
-
-unsigned char myGet_CRC8_Check_Sum(unsigned char *pchMessage,unsigned int dwLength,unsigned char ucCRC8)
-{
-    unsigned char ucIndex;
-    while (dwLength--)
-    {
-        ucIndex = ucCRC8^(*pchMessage++);
-        ucCRC8 = myCRC8_TAB[ucIndex];
-    }
-    return(ucCRC8);
-}
-
-unsigned int myVerify_CRC8_Check_Sum(unsigned char *pchMessage, unsigned int dwLength)
-{
-    unsigned char ucExpected = 0;
-    if ((pchMessage == 0) || (dwLength <= 2)) return 0;
-    ucExpected = myGet_CRC8_Check_Sum (pchMessage, dwLength-1, myCRC8_INIT);
-    return ( ucExpected == pchMessage[dwLength-1] );
-}
-
+/*
+** Descriptions: CRC16 checksum function
+** Input: Data to check,Stream length, initialized checksum
+** Output: CRC checksum
+*/
 uint16_t myGet_CRC16_Check_Sum(uint8_t *pchMessage,uint32_t dwLength,uint16_t wCRC)
 {
     uint8_t chData;
@@ -108,7 +130,11 @@ uint16_t myGet_CRC16_Check_Sum(uint8_t *pchMessage,uint32_t dwLength,uint16_t wC
     }
     return wCRC;
 }
-
+/*
+** Descriptions: CRC16 Verify function
+** Input: Data to Verify,Stream length = Data + checksum
+** Output: True or False (CRC Verify Result)
+*/
 uint32_t myVerify_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
 {
     uint16_t wExpected = 0;
@@ -120,6 +146,23 @@ uint32_t myVerify_CRC16_Check_Sum(uint8_t *pchMessage, uint32_t dwLength)
     return ((wExpected & 0xff) == pchMessage[dwLength - 2] && ((wExpected >> 8) & 0xff) ==
     pchMessage[dwLength - 1]);
 }
+/*
+** Descriptions: append CRC16 to the end of data
+** Input: Data to CRC and append,Stream length = Data + checksum
+** Output: True or False (CRC Verify Result)
+*/
+void Append_CRC16_Check_Sum(uint8_t * pchMessage,uint32_t dwLength)
+{
+uint16_t wCRC = 0;
+if ((pchMessage == NULL) || (dwLength <= 2))
+{
+return;
+}
+wCRC = myGet_CRC16_Check_Sum ( (uint8_t *)pchMessage, dwLength-2, myCRC16_INIT );
+pchMessage[dwLength-2] = (uint8_t)(wCRC & 0x00ff);
+pchMessage[dwLength-1] = (uint8_t)((wCRC >> 8)& 0x00ff);
+}
+
 
 uint8_t tmp_judge;
 void InitJudgeUart(void){
@@ -371,4 +414,39 @@ void Judge_Refresh_Result()
 void Judge_Refresh_Buff()
 {
 	JUDGE_Received = 1;
+}
+
+
+extern uint16_t tmpx;
+extShowData_t user_data;
+void Send_User_Data()
+{
+	uint8_t Buffer[22]={0};
+	user_data.data1 = tmpx;
+	user_data.data2 += 0.2f;
+	user_data.data3 += 0.3f;
+	user_data.mask = 0xFF;
+	unsigned char * bs1 = (unsigned char*)&user_data.data1;
+	unsigned char * bs2 = (unsigned char*)&user_data.data2;
+	unsigned char * bs3 = (unsigned char*)&user_data.data3;
+	Buffer[0] = 0xA5;
+	Buffer[1]  = 13;
+	Buffer[3] = 1;
+	Buffer[4] = myGet_CRC8_Check_Sum(&Buffer[0], 5-1, myCRC8_INIT);
+	Buffer[5] = 0x00;
+	Buffer[6] = 0x01;
+	for(int i=7;i<11;i++) Buffer[i] = bs1[i-7];
+	for(int i=11;i<15;i++) Buffer[i] = bs2[i-11];
+	for(int i=15;i<19;i++) Buffer[i] = bs3[i-15];
+	Buffer[19] = user_data.mask;
+	static uint16_t CRC16=0;
+	CRC16 = myGet_CRC16_Check_Sum(Buffer, 20, myCRC16_INIT);
+	Buffer[20] = CRC16 & 0xff;
+	Buffer[21] = (CRC16 >> 8) & 0xff;
+	HAL_UART_Transmit(&JUDGE_UART,Buffer,22,0xff);
+//	HAL_UART_Transmit_IT(&JUDGE_UART,(uint8_t *)&Buffer,22);
+//	if(HAL_UART_Transmit_DMA(&JUDGE_UART,(uint8_t *)&Buffer,22)!=HAL_OK)
+//	{
+//		Error_Handler();
+//	};
 }

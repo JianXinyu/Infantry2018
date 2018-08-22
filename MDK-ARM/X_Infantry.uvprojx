@@ -335,7 +335,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F427xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                                                ../Drivers/STM32F4xx_HAL_Driver/Inc;                                                ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                                                ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;                                                ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;                                                ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;                                                ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                                                ../Middlewares/Third_Party/FreeRTOS/Source/include;                                                ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                                                ../Drivers/CMSIS/Include;                                                ..\Framework;                                                ..\Framework\utilities;                                                ..\Framework\rtos;                                                ..\Framework\drivers;                                                ..\Framework\applications;                                                ..\Framework\peripheral</IncludePath>
+              <IncludePath>../Inc;                                                 ../Drivers/STM32F4xx_HAL_Driver/Inc;                                                 ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                                                 ../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F;                                                 ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc;                                                 ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc;                                                 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                                                 ../Middlewares/Third_Party/FreeRTOS/Source/include;                                                 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;                                                 ../Drivers/CMSIS/Include;                                                 ..\Framework;                                                 ..\Framework\utilities;                                                 ..\Framework\rtos;                                                 ..\Framework\drivers;                                                 ..\Framework\applications;                                                 ..\Framework\peripheral</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -400,14 +400,9 @@
           <GroupName>Drivers/STM32F4xx_HAL_Driver</GroupName>
           <Files>
             <File>
-              <FileName>stm32f4xx_hal_dma.c</FileName>
+              <FileName>stm32f4xx_hal_pcd.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_cortex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c</FilePath>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_pcd_ex.c</FileName>
@@ -415,44 +410,19 @@
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_uart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_pwr.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_dma_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_pcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_flash_ramfunc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_ll_usb.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_tim_ex.c</FileName>
+              <FileName>stm32f4xx_hal_adc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c</FilePath>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_flash_ex.c</FileName>
+              <FileName>stm32f4xx_hal_adc_ex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c</FilePath>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_can.c</FileName>
@@ -460,9 +430,29 @@
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c</FilePath>
             </File>
             <File>
+              <FileName>stm32f4xx_hal_iwdg.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f4xx_hal_spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_tim_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_rcc.c</FileName>
@@ -475,14 +465,19 @@
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f4xx_hal_pwr_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_hal_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_flash_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_flash_ramfunc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ramfunc.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_hal_gpio.c</FileName>
@@ -490,29 +485,34 @@
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c</FilePath>
             </File>
             <File>
+              <FileName>stm32f4xx_hal_dma_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_pwr.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_pwr_ex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f4xx_hal_cortex.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c</FilePath>
+            </File>
+            <File>
               <FileName>stm32f4xx_hal.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_tim.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_iwdg.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm32f4xx_hal_adc_ex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -520,9 +520,9 @@
           <GroupName>Middlewares/FreeRTOS</GroupName>
           <Files>
             <File>
-              <FileName>croutine.c</FileName>
+              <FileName>heap_4.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/croutine.c</FilePath>
+              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c</FilePath>
             </File>
             <File>
               <FileName>port.c</FileName>
@@ -530,14 +530,9 @@
               <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F/port.c</FilePath>
             </File>
             <File>
-              <FileName>cmsis_os.c</FileName>
+              <FileName>croutine.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c</FilePath>
-            </File>
-            <File>
-              <FileName>timers.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/timers.c</FilePath>
+              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/croutine.c</FilePath>
             </File>
             <File>
               <FileName>event_groups.c</FileName>
@@ -545,24 +540,29 @@
               <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c</FilePath>
             </File>
             <File>
-              <FileName>queue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/queue.c</FilePath>
-            </File>
-            <File>
               <FileName>list.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/list.c</FilePath>
             </File>
             <File>
-              <FileName>heap_4.c</FileName>
+              <FileName>queue.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c</FilePath>
+              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/queue.c</FilePath>
             </File>
             <File>
               <FileName>tasks.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>timers.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/timers.c</FilePath>
+            </File>
+            <File>
+              <FileName>cmsis_os.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -575,9 +575,9 @@
               <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c</FilePath>
             </File>
             <File>
-              <FileName>usbd_cdc.c</FileName>
+              <FileName>usbd_ctlreq.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c</FilePath>
+              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c</FilePath>
             </File>
             <File>
               <FileName>usbd_ioreq.c</FileName>
@@ -585,9 +585,9 @@
               <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c</FilePath>
             </File>
             <File>
-              <FileName>usbd_ctlreq.c</FileName>
+              <FileName>usbd_cdc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c</FilePath>
+              <FilePath>../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1065,14 +1065,34 @@
           <GroupName>Application/User</GroupName>
           <Files>
             <File>
-              <FileName>freertos.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/freertos.c</FilePath>
-            </File>
-            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/main.c</FilePath>
+            </File>
+            <File>
+              <FileName>gpio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/gpio.c</FilePath>
+            </File>
+            <File>
+              <FileName>adc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/adc.c</FilePath>
+            </File>
+            <File>
+              <FileName>can.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/can.c</FilePath>
+            </File>
+            <File>
+              <FileName>dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/dma.c</FilePath>
+            </File>
+            <File>
+              <FileName>freertos.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/freertos.c</FilePath>
             </File>
             <File>
               <FileName>iwdg.c</FileName>
@@ -1080,9 +1100,9 @@
               <FilePath>../Src/iwdg.c</FilePath>
             </File>
             <File>
-              <FileName>usbd_conf.c</FileName>
+              <FileName>spi.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Src/usbd_conf.c</FilePath>
+              <FilePath>../Src/spi.c</FilePath>
             </File>
             <File>
               <FileName>tim.c</FileName>
@@ -1095,9 +1115,14 @@
               <FilePath>../Src/usart.c</FilePath>
             </File>
             <File>
-              <FileName>usbd_cdc_if.c</FileName>
+              <FileName>usb_device.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Src/usbd_cdc_if.c</FilePath>
+              <FilePath>../Src/usb_device.c</FilePath>
+            </File>
+            <File>
+              <FileName>usbd_conf.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Src/usbd_conf.c</FilePath>
             </File>
             <File>
               <FileName>usbd_desc.c</FileName>
@@ -1105,19 +1130,9 @@
               <FilePath>../Src/usbd_desc.c</FilePath>
             </File>
             <File>
-              <FileName>can.c</FileName>
+              <FileName>usbd_cdc_if.c</FileName>
               <FileType>1</FileType>
-              <FilePath>../Src/can.c</FilePath>
-            </File>
-            <File>
-              <FileName>gpio.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/gpio.c</FilePath>
-            </File>
-            <File>
-              <FileName>usb_device.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/usb_device.c</FilePath>
+              <FilePath>../Src/usbd_cdc_if.c</FilePath>
             </File>
             <File>
               <FileName>stm32f4xx_it.c</FileName>
@@ -1125,24 +1140,9 @@
               <FilePath>../Src/stm32f4xx_it.c</FilePath>
             </File>
             <File>
-              <FileName>dma.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/dma.c</FilePath>
-            </File>
-            <File>
               <FileName>stm32f4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/stm32f4xx_hal_msp.c</FilePath>
-            </File>
-            <File>
-              <FileName>spi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/spi.c</FilePath>
-            </File>
-            <File>
-              <FileName>adc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>../Src/adc.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -63,7 +63,7 @@ fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(14.0, 0.01, 17.0, 10000.0, 100
 fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(16.0, 0.02, 18.0, 10000.0, 10000.0, 10000.0, 6000.0);
 fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(10, 0.0, 18.0, 10000.0, 10000.0, 10000.0, 5000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(30.0, 0.0, 18, 10000.0, 10000.0, 10000.0, 5000.0);
-int yaw_zero = 2740;
+int yaw_zero = 4710;
 int pitch_zero = 370;
 #endif
 #ifdef INFANTRY_2
@@ -72,7 +72,7 @@ fw_PID_Regulator_t pitchPositionPID = fw_PID_INIT(15.0, 0.02, 15, 10000.0, 10000
 fw_PID_Regulator_t yawPositionPID = fw_PID_INIT(12.0, 0.01, 26, 10000.0, 10000.0, 10000.0, 6000.0);
 fw_PID_Regulator_t pitchSpeedPID = fw_PID_INIT(10, 0.0, 15, 10000.0, 10000.0, 10000.0, 5000.0);
 fw_PID_Regulator_t yawSpeedPID = fw_PID_INIT(35.0, 0.0, 17, 10000.0, 10000.0, 10000.0, 5000.0);
-int yaw_zero = 5300;
+int yaw_zero = 1260;
 int pitch_zero = 4970;
 #endif
 
@@ -316,7 +316,7 @@ void ControlYaw(void)
 			#endif				
 			yawIntensity = strange_coefficient_yaw * ProcessYawPID(yawAngleTarget, yawRealAngle, -gyroZspeed);
 			if(twist_state)yawIntensity = strange_coefficient_yaw * ProcessRotateYawPID(yawAngleTarget, yawRealAngle, -gyroZspeed);
-		//	yawIntensity = 0;
+//			yawIntensity = 0;
 			setMotor(GMYAW, yawIntensity);
 			s_yawCount = 0;
 

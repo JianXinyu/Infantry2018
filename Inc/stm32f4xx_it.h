@@ -70,6 +70,7 @@ void DMA2_Stream2_IRQHandler(void);
 void CAN2_TX_IRQHandler(void);
 void CAN2_RX0_IRQHandler(void);
 void OTG_FS_IRQHandler(void);
+void DMA2_Stream6_IRQHandler(void);
 void USART6_IRQHandler(void);
 
 #ifdef __cplusplus
